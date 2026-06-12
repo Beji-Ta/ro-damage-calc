@@ -323,7 +323,7 @@ export default function App() {
       <header style={S.header}>
         {/* ヒーロー画像 */}
         <div style={S.heroWrap}>
-          <img src="/popcorn-warrior.jpg" alt="ポップコーン戦士" style={S.heroImg} />
+          <img src={`${import.meta.env.BASE_URL}popcorn-warrior.jpg`} alt="ポップコーン戦士" style={S.heroImg} />
           <div style={S.heroOverlay}>
             <div style={S.heroPopcornRow}>🍿 ✨ 🍿 ✨ 🍿</div>
             <h1 style={S.title}>
