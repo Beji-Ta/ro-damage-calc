@@ -41,6 +41,7 @@ interface Skill {
   hits: number
   isRanged?: boolean
   armorCalcElement?: string
+  bypassResistances?: boolean  // エナジーコートと鎧属性以外の全軽減を無視
   notes?: string
 }
 
@@ -107,14 +108,14 @@ const ENEMY_LIST: EnemyData[] = [
     element: '闇',
     isBoss: true,
     skills: [
-      { id: 'napalm_beat',  name: 'ナパームビート',     type: 'magic',    element: '火',     powerMultiplier: 3.0, hits: 1 },
+      { id: 'napalm_beat',  name: 'ナパームビート',     type: 'magic',    element: '念',     powerMultiplier: 3.0, hits: 1 },
       { id: 'holy_attack',  name: 'ホーリーアタック',   type: 'physical', element: '聖',     powerMultiplier: 2.5, hits: 1 },
       { id: 'earth_quake',  name: 'アースクエイク',     type: 'magic',    element: '地',     powerMultiplier: 7.5, hits: 1 },
       { id: 'bg_tetra_neutral', name: 'テトラボルテックス①', type: 'magic', element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_earth',   name: 'テトラボルテックス②', type: 'magic', element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_water',   name: 'テトラボルテックス③', type: 'magic', element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_fire',    name: 'テトラボルテックス④', type: 'magic', element: '火',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '火属性hit / 鎧相性は常に無属性扱い' },
-      { id: 'killing_oura', name: 'キリングオーラ',     type: 'physical', element: '無属性', powerMultiplier: 8.0, hits: 1, notes: '倍率近似値' },
+      { id: 'killing_oura', name: 'キリングオーラ',     type: 'physical', element: '無属性', powerMultiplier: 8.0, hits: 1, bypassResistances: true, notes: '貫通攻撃: エナジーコート・念鎧のみ有効' },
       { id: 'wide_stone',   name: 'ワイドストーン',     type: 'magic',    element: '地',     powerMultiplier: 1.0, hits: 1 },
     ],
   },
@@ -331,12 +332,25 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
     const rangedFactor    = skill.isRanged ? Math.max(0, (100 - stats.rangedRes) / 100) : 1.0
 
     const stoneSkinFactor = stats.stoneSkinActive ? (isPhys ? 0.80 : 1.20) : 1.0
-    const afterResistances = rawBase * raceFactor * elemFactor * armorElemFactor * bossFactor * specFactor * rangedFactor
-      * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor * energyCoatFactor
-    const afterHardDef     = afterResistances * hardFactor
-    const perHit           = Math.max(1, Math.floor(afterHardDef - sdUsed))
-    const total            = perHit * skill.hits
-    const hardDefReductionPct = (1 - hardFactor) * 100
+
+    let afterResistances: number
+    let afterHardDef: number
+    let hardDefReductionPct: number
+
+    if (skill.bypassResistances) {
+      // エナジーコートと鎧属性のみ有効、他は全貫通
+      afterResistances   = rawBase * armorElemFactor * energyCoatFactor
+      afterHardDef       = afterResistances
+      hardDefReductionPct = 0
+    } else {
+      afterResistances   = rawBase * raceFactor * elemFactor * armorElemFactor * bossFactor * specFactor * rangedFactor
+        * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor * energyCoatFactor
+      afterHardDef       = afterResistances * hardFactor
+      hardDefReductionPct = (1 - hardFactor) * 100
+    }
+
+    const perHit = Math.max(1, Math.floor(skill.bypassResistances ? afterHardDef : afterHardDef - sdUsed))
+    const total  = perHit * skill.hits
 
     return {
       skillId: skill.id,
