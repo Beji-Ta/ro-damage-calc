@@ -26,6 +26,7 @@ interface PlayerStats {
   crouchActive: boolean
   ironHowlingActive: boolean
   stoneSkinActive: boolean
+  assumptioActive: boolean  // 装備DEF・装備MDEF 2倍
   energyCoatLevel: number  // 0=OFF 1=10%カット 2=20%カット 3=30%カット
   armorElement: string
   mresIgnored: boolean
@@ -309,7 +310,7 @@ function getElemMod(attackElem: string, attackLv: number, armorElem: string): nu
 
 // ── LocalStorage ───────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ro_calc_player_v9'
+const STORAGE_KEY = 'ro_calc_player_v10'
 
 const DEFAULT_STATS: PlayerStats = {
   statusDef: 100,
@@ -335,6 +336,7 @@ const DEFAULT_STATS: PlayerStats = {
   crouchActive: false,
   ironHowlingActive: false,
   stoneSkinActive: false,
+  assumptioActive: false,
   energyCoatLevel: 0,
   armorElement: '無属性',
   mresIgnored: false,
@@ -357,8 +359,10 @@ function saveStats(s: PlayerStats): void {
 // ── 計算ロジック ───────────────────────────────────────────────────────────────
 
 function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
-  const hardDefFactor  = 135 / (stats.equipDef  + 135)
-  const hardMdefFactor = 135 / (stats.equipMdef + 135)
+  const effectiveEquipDef  = stats.assumptioActive ? stats.equipDef  * 2 : stats.equipDef
+  const effectiveEquipMdef = stats.assumptioActive ? stats.equipMdef * 2 : stats.equipMdef
+  const hardDefFactor  = 135 / (effectiveEquipDef  + 135)
+  const hardMdefFactor = 135 / (effectiveEquipMdef + 135)
 
   const resFactor   = (2000 + stats.res)  / (2000 + stats.res  * 5)
   const mresFactor  = stats.mresIgnored ? 1.0 : (2000 + stats.mres) / (2000 + stats.mres * 5)
@@ -599,6 +603,13 @@ export default function App() {
               onToggle={() => toggle('stoneSkinActive')}
               activeColor={C.teal}
             />
+            <ToggleRow
+              label="アスムプティオ状態"
+              description="装備DEF・装備MDEF が 2倍になる"
+              active={stats.assumptioActive}
+              onToggle={() => toggle('assumptioActive')}
+              activeColor={C.blue}
+            />
             <StepToggleRow
               label="エナジーコート"
               description="SP残量に応じてダメージカット — 多い: 30% / 中: 20% / 少ない: 10%"
@@ -690,6 +701,7 @@ export default function App() {
               {stats.crouchActive      && <ParamChip label="うずくまる"     value="×0.20" color={C.gold} />}
               {stats.ironHowlingActive && <ParamChip label="アイアンハウリング" value="×0.60" color={C.gold} />}
               {stats.stoneSkinActive   && <ParamChip label="ストーンスキン" value="物理×0.80 魔法×1.20" color={C.teal} />}
+              {stats.assumptioActive   && <ParamChip label="アスムプティオ" value="装備DEF/MDEF×2" color={C.blue} />}
               {stats.energyCoatLevel > 0 && <ParamChip label="エナジーコート" value={`×${(1 - stats.energyCoatLevel * 0.10).toFixed(2)}`} color={C.blue} />}
               {stats.mresIgnored && <ParamChip label="Mres無視" value="ON" color={C.danger} />}
             </div>
