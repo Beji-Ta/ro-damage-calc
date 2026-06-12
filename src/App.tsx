@@ -467,29 +467,18 @@ export default function App() {
     <div style={S.root}>
       {/* ヘッダー */}
       <header style={S.header}>
-        {/* ヒーロー画像 */}
-        <div style={S.heroWrap}>
-          <img src={`${import.meta.env.BASE_URL}popcorn-warrior.jpg`} alt="ポップコーン戦士" style={S.heroImg} />
-          <div style={S.heroOverlay}>
-            <div style={S.heroPopcornRow}>🍿 ✨ 🍿 ✨ 🍿</div>
-            <h1 style={S.title}>
-              <span style={S.titleRo}>RO</span>
-              <span style={S.titleMain}> 被ダメージ計算機</span>
-            </h1>
-            <p style={S.heroTagline}>― ポップコーン戦士に守られし 計算の聖地 ―</p>
-            <p style={S.subtitle}>Ragnarok Online — jRO仕様 / モンスターから受ける被害のシミュレーション</p>
-          </div>
+        <div style={S.roFrame}>
+          <div style={S.roDecoRow}>⚔ ✦ ✦ ✦ ⚔</div>
+          <h1 style={S.title}>
+            <span style={S.titleRo}>Ragnarok Online</span>
+            <span style={S.titleMain}>被ダメージ計算機</span>
+          </h1>
+          <p style={S.roTagline}>― jRO仕様 / モンスターから受ける被害のシミュレーション ―</p>
         </div>
-
-        {/* 讃えバナー */}
         <div style={S.celebBanner}>
-          {'🍿✨🍿✨🍿✨🍿✨🍿'.split('').map((c, i) => (
-            <span key={i} style={{ opacity: 0.7 }}>{c}</span>
-          ))}
-          <span style={S.celebText}>　讃 え よ ！　ポップコーン戦士！　</span>
-          {'🍿✨🍿✨🍿✨🍿✨🍿'.split('').map((c, i) => (
-            <span key={i + 99} style={{ opacity: 0.7 }}>{c}</span>
-          ))}
+          <span style={S.celebText}>
+            ⚔ Prontera ✦ Morroc ✦ Geffen ✦ Payon ✦ Alberta ✦ Izlude ✦ Aldebaran ✦ Lutie ✦ Juno ✦ Einbroch ✦ Lighthalzen ✦ Rachel ✦ Veins ✦ Hugel ⚔
+          </span>
         </div>
       </header>
 
@@ -1021,76 +1010,72 @@ const S: Record<string, React.CSSProperties> = {
   header: {
     position: 'relative',
     overflow: 'hidden',
-    borderBottom: `4px solid ${C.popcorn}`,
-    background: '#0f0800',
+    background: 'linear-gradient(180deg, #04040e 0%, #0a1035 50%, #0d0418 100%)',
+    borderBottom: '4px solid #8b1a1a',
+    boxShadow: '0 4px 24px rgba(139,26,26,0.5)',
   },
 
-  heroWrap: {
-    position: 'relative',
-    width: '100%',
-    height: '260px',
-    overflow: 'hidden',
+  roFrame: {
+    padding: '24px 24px 18px',
+    textAlign: 'center' as const,
+    borderTop: '2px solid #8b6914',
+    borderBottom: '2px solid #8b6914',
+    margin: '14px 24px 0',
+    background: 'radial-gradient(ellipse at center, rgba(180,140,50,0.07) 0%, transparent 70%)',
   },
-  heroImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    objectPosition: 'center 15%',
-    display: 'block',
+  roDecoRow: {
+    color: '#d4aa40',
+    fontSize: '1.1rem',
+    letterSpacing: '12px',
+    marginBottom: '10px',
+    filter: 'drop-shadow(0 0 8px rgba(212,170,64,0.7))',
   },
-  heroOverlay: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    background: 'linear-gradient(0deg, rgba(10,4,0,0.92) 0%, rgba(10,4,0,0.55) 55%, transparent 100%)',
-    padding: '12px 24px 18px',
-    textAlign: 'center',
-  },
-  heroPopcornRow: {
-    fontSize: '1.1rem', letterSpacing: '6px',
-    marginBottom: '4px',
-    filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.9))',
-  },
-  heroTagline: {
-    color: '#f59e0b',
-    fontSize: '0.8rem',
-    fontWeight: 700,
-    letterSpacing: '0.18em',
-    margin: '4px 0 2px',
-    textShadow: '0 0 12px rgba(245,158,11,0.7), 0 1px 4px rgba(0,0,0,0.9)',
+  roTagline: {
+    color: '#a08040',
+    fontSize: '0.76rem',
+    marginTop: '8px',
+    letterSpacing: '0.12em',
   },
 
   celebBanner: {
-    display: 'flex', justifyContent: 'center', alignItems: 'center',
-    flexWrap: 'wrap',
-    background: 'linear-gradient(90deg, #78350f 0%, #b45309 20%, #d97706 40%, #f59e0b 50%, #d97706 60%, #b45309 80%, #78350f 100%)',
-    padding: '7px 16px',
-    gap: '1px',
+    textAlign: 'center' as const,
+    background: 'linear-gradient(90deg, #0d0000 0%, #3a0a0a 30%, #5c1010 50%, #3a0a0a 70%, #0d0000 100%)',
+    padding: '6px 16px',
+    marginTop: '14px',
+    borderTop: '1px solid #6b2020',
   },
   celebText: {
-    color: '#fff',
-    fontWeight: 900,
-    fontSize: '0.95rem',
-    letterSpacing: '0.22em',
-    textShadow: '0 1px 4px rgba(0,0,0,0.6), 0 0 16px rgba(255,200,50,0.5)',
+    color: '#c09050',
+    fontWeight: 600,
+    fontSize: '0.76rem',
+    letterSpacing: '0.18em',
   },
 
   title: {
-    fontSize: '2.1rem', fontWeight: 900, letterSpacing: '0.04em',
-    margin: '2px 0 4px', lineHeight: 1,
-    textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 24px rgba(245,158,11,0.4)',
+    margin: '0 0 6px',
+    lineHeight: 1.2,
   },
   titleRo: {
-    color: '#fbbf24',
-    display: 'inline-block',
-    textShadow: '0 0 20px rgba(251,191,36,0.6)',
+    fontSize: '2.0rem',
+    fontWeight: 900,
+    color: '#d4aa40',
+    display: 'block',
+    letterSpacing: '5px',
+    fontFamily: 'Georgia, "Times New Roman", serif',
+    textShadow: '0 0 28px rgba(212,170,64,0.8), 0 2px 6px rgba(0,0,0,0.9)',
   },
   titleMain: {
-    color: '#ffffff',
+    fontSize: '1.05rem',
+    color: '#e8d5b0',
+    display: 'block',
+    letterSpacing: '3px',
+    textShadow: '0 0 14px rgba(232,213,176,0.4), 0 1px 4px rgba(0,0,0,0.9)',
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.65)', fontSize: '0.78rem',
-    marginTop: '2px', letterSpacing: '0.06em',
-    textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+    color: 'rgba(180,160,120,0.7)',
+    fontSize: '0.75rem',
+    marginTop: '4px',
+    letterSpacing: '0.06em',
   },
 
   main: {
@@ -1225,7 +1210,7 @@ const S: Record<string, React.CSSProperties> = {
 
   enemyCard: {
     background: 'linear-gradient(135deg, #fff8e1 0%, #fff3cd 100%)',
-    border: `2px solid ${C.popcorn}60`,
+    border: `2px solid ${C.gold}60`,
     borderRadius: '12px', padding: '14px',
     boxShadow: `0 4px 12px rgba(245,158,11,0.1)`,
   },
