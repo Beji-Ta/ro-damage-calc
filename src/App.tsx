@@ -44,7 +44,7 @@ interface Skill {
   armorCalcElement?: string
   bypassResistances?: boolean      // うずくまる・金剛・エナジーコート・アイアンハウリング・ストーンスキン以外を無視
   bypassSpecialReductions?: boolean // 鎧属性・金剛・うずくまる・アイアンハウリング・エナジーコートを無視 (ストーンスキンは有効)
-  bypassAllResistances?: boolean    // 遠距離耐性・ストーンスキン以外を全貫通 (アースクエイク用)
+  bypassAllResistances?: boolean    // 鎧属性・遠距離耐性・ストーンスキン以外を全貫通 (アースクエイク用)
   fixedDamage?: number              // ATK計算を無視してこの値を rawBase に使用
   notes?: string
 }
@@ -406,9 +406,10 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
     let hardDefReductionPct: number
 
     if (skill.bypassAllResistances) {
-      // 貫通: 全耐性・Res・除算DEF・減算DEF
-      // 有効: 遠距離耐性・ストーンスキン
-      afterResistances   = rawBase * rangedFactor * stoneSkinFactor
+      // 貫通: 種族・ボス・属性耐性・Res・除算DEF・減算DEF
+      // 有効: 鎧属性・遠距離耐性・金剛・うずくまる・アイアンハウリング・エナジーコート・ストーンスキン
+      afterResistances   = rawBase * (armorElemMod / 100) * rangedFactor
+        * kongouFactor * crouchFactor * ironHowlingFactor * energyCoatFactor * stoneSkinFactor
       afterHardDef       = afterResistances
       hardDefReductionPct = 0
     } else if (skill.bypassResistances) {
@@ -441,8 +442,8 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
       afterHardDef,
       statusDefUsed: sdUsed,
       elementResUsed: elemResValue,
-      armorElemMod: (bsr || skill.bypassAllResistances) ? 100 : armorElemMod,
-      armorCalcOverridden: !bsr && !skill.bypassAllResistances && !!skill.armorCalcElement && skill.armorCalcElement !== skill.element,
+      armorElemMod: bsr ? 100 : armorElemMod,
+      armorCalcOverridden: !bsr && !!skill.armorCalcElement && skill.armorCalcElement !== skill.element,
       perHit,
       total,
       hardDefReductionPct,
