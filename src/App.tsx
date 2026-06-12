@@ -84,25 +84,6 @@ interface DamageResult {
 
 const ENEMY_LIST: EnemyData[] = [
   {
-    id: 'edga',
-    name: 'エドガ',
-    hp: 2_364_000,
-    atk: 4_800,
-    matk: 3_200,
-    race: '悪魔',
-    element: '闇',
-    isBoss: true,
-    skills: [
-      { id: 'normal',        name: '通常攻撃',            type: 'physical', element: '無属性', powerMultiplier: 1.0, hits: 1 },
-      { id: 'double',        name: '二連撃',               type: 'physical', element: '無属性', powerMultiplier: 1.0, hits: 2 },
-      { id: 'sonic_blow',    name: 'ソニックブロー',       type: 'physical', element: '無属性', powerMultiplier: 0.8, hits: 8, notes: '8ヒット合計' },
-      { id: 'fire_pillar',   name: 'ファイアーピラー',     type: 'magic',    element: '火',     powerMultiplier: 5.0, hits: 1 },
-      { id: 'demonstration', name: 'デモンストレーション',  type: 'magic',    element: '火',     powerMultiplier: 1.2, hits: 5, isRanged: true, notes: '5ヒット合計' },
-      { id: 'dark_strike',   name: 'ダークストライク',     type: 'physical', element: '闇',     powerMultiplier: 3.0, hits: 1 },
-      { id: 'blood_drain',   name: 'ブラッドドレイン',     type: 'magic',    element: '闇',     powerMultiplier: 2.5, hits: 1, isRanged: true },
-    ],
-  },
-  {
     id: 'betelgeuse',
     name: 'ベテルギウス',
     hp: 999_999_999,
