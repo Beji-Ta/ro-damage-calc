@@ -306,8 +306,8 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
   const hardDefFactor  = 135 / (stats.equipDef  + 135)
   const hardMdefFactor = 135 / (stats.equipMdef + 135)
 
-  const resFactor   = 569 / (stats.res  + 569)
-  const mresFactor  = stats.mresIgnored ? 1.0 : 569 / (stats.mres + 569)
+  const resFactor   = (2000 + stats.res)  / (2000 + stats.res  * 5)
+  const mresFactor  = stats.mresIgnored ? 1.0 : (2000 + stats.mres) / (2000 + stats.mres * 5)
   const raceFactor  = Math.max(0, (100 - stats.raceRes) / 100)
   const bossFactor        = enemy.isBoss ? Math.max(0, (100 - stats.bossRes) / 100) : 1.0
   const kongouFactor      = stats.kongouActive      ? 0.10 : 1.0
@@ -403,8 +403,8 @@ export default function App() {
 
   const defReductionPct  = (stats.equipDef  / (stats.equipDef  + 135)) * 100
   const mdefReductionPct = (stats.equipMdef / (stats.equipMdef + 135)) * 100
-  const resReductionPct  = (1 - 569 / (stats.res  + 569)) * 100
-  const mresReductionPct = (1 - 569 / (stats.mres + 569)) * 100
+  const resReductionPct  = (1 - (2000 + stats.res)  / (2000 + stats.res  * 5)) * 100
+  const mresReductionPct = (1 - (2000 + stats.mres) / (2000 + stats.mres * 5)) * 100
 
   return (
     <div style={S.root}>
@@ -463,14 +463,14 @@ export default function App() {
 
           <SectionLabel color={C.blue}>特殊ステータス (Res / Mres)</SectionLabel>
           <div style={S.statsGrid}>
-            <NumField label="Res (物理軽減)"  value={stats.res}  min={-569} max={500} onChange={v => setNum('res', v)}  color={C.orange} />
-            <NumField label="Mres (魔法軽減)" value={stats.mres} min={-569} max={500} onChange={v => setNum('mres', v)} color={C.purple} />
+            <NumField label="Res (物理軽減)"  value={stats.res}  min={-400} max={500} onChange={v => setNum('res', v)}  color={C.orange} />
+            <NumField label="Mres (魔法軽減)" value={stats.mres} min={-400} max={500} onChange={v => setNum('mres', v)} color={C.purple} />
           </div>
           <div style={S.derivedRow}>
             <DerivedStat label="Res 軽減率" value={`${resReductionPct.toFixed(1)}%`}  color={C.orange} />
             <DerivedStat label="Mres 軽減率" value={`${mresReductionPct.toFixed(1)}%`} color={C.purple} />
           </div>
-          <p style={{ ...S.saveNote, fontSize: '0.72rem', color: C.textMuted }}>※ Res/Mres は生ステータス値 — 569/(val+569) で軽減率に換算</p>
+          <p style={{ ...S.saveNote, fontSize: '0.72rem', color: C.textMuted }}>※ Res/Mres は生ステータス値 — (2000+val)/(2000+val×5) で軽減率に換算 (上限80%カット)</p>
 
           <p style={S.saveNote}>※ 入力値はブラウザに自動保存されます 🍿</p>
         </section>
