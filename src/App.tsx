@@ -42,8 +42,9 @@ interface Skill {
   hits: number
   isRanged?: boolean
   armorCalcElement?: string
-  bypassResistances?: boolean  // うずくまる・金剛・エナジーコート・アイアンハウリング・ストーンスキン以外を無視
-  fixedDamage?: number         // ATK計算を無視してこの値を rawBase に使用
+  bypassResistances?: boolean      // うずくまる・金剛・エナジーコート・アイアンハウリング・ストーンスキン以外を無視
+  bypassSpecialReductions?: boolean // 鎧属性・金剛・うずくまる・アイアンハウリング・エナジーコートを無視 (ストーンスキンは有効)
+  fixedDamage?: number              // ATK計算を無視してこの値を rawBase に使用
   notes?: string
 }
 
@@ -112,7 +113,7 @@ const ENEMY_LIST: EnemyData[] = [
     skills: [
       { id: 'napalm_beat',  name: 'ナパームビート',     type: 'magic',    element: '念',     powerMultiplier: 3.0, hits: 1 },
       { id: 'holy_attack',  name: 'ホーリーアタック',   type: 'physical', element: '聖',     powerMultiplier: 2.5, hits: 1 },
-      { id: 'earth_quake',  name: 'アースクエイク',     type: 'magic',    element: '地',     powerMultiplier: 7.5, hits: 1, isRanged: true },
+      { id: 'earth_quake',  name: 'アースクエイク',     type: 'magic',    element: '地',     powerMultiplier: 7.5, hits: 1, isRanged: true, bypassSpecialReductions: true },
       { id: 'bg_tetra_neutral', name: 'テトラボルテックス①', type: 'magic', element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_earth',   name: 'テトラボルテックス②', type: 'magic', element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_water',   name: 'テトラボルテックス③', type: 'magic', element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
@@ -133,7 +134,7 @@ const ENEMY_LIST: EnemyData[] = [
     skills: [
       { id: 'df_holy_attack',    name: 'ホーリーアタック',       type: 'physical', element: '聖',     powerMultiplier:  2.5,  hits: 1 },
       { id: 'df_storm_gust',     name: 'ストームガスト',         type: 'magic',    element: '水',     powerMultiplier:  7.2,  hits: 1, notes: '倍率近似値' },
-      { id: 'df_earth_quake',    name: 'アースクエイク',         type: 'magic',    element: '地',     powerMultiplier:  7.5,  hits: 1, isRanged: true },
+      { id: 'df_earth_quake',    name: 'アースクエイク',         type: 'magic',    element: '地',     powerMultiplier:  7.5,  hits: 1, isRanged: true, bypassSpecialReductions: true },
       { id: 'df_psychic_wave',   name: 'Mサイキックウェーブ',    type: 'magic',    element: '念',     powerMultiplier:  5.0,  hits: 3, notes: '3ヒット合計 ※倍率近似値' },
       { id: 'df_ray_genesis',    name: 'Mレイオブジェネシス',    type: 'magic',    element: '聖',     powerMultiplier: 20.0,  hits: 1, notes: '倍率近似値' },
       { id: 'df_tetra_neutral',  name: 'テトラボルテックス①',   type: 'magic',    element: '無属性', powerMultiplier: 25.0,  hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
@@ -152,7 +153,7 @@ const ENEMY_LIST: EnemyData[] = [
     element: '無属性',
     isBoss: true,
     skills: [
-      { id: 'rg2_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true },
+      { id: 'rg2_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true, bypassSpecialReductions: true },
       { id: 'rg2_tetra_neutral',  name: 'テトラボルテックス①', type: 'magic',    element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg2_tetra_earth',    name: 'テトラボルテックス②', type: 'magic',    element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg2_tetra_water',    name: 'テトラボルテックス③', type: 'magic',    element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
@@ -170,7 +171,7 @@ const ENEMY_LIST: EnemyData[] = [
     element: '無属性',
     isBoss: true,
     skills: [
-      { id: 'rg3_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true },
+      { id: 'rg3_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true, bypassSpecialReductions: true },
       { id: 'rg3_tetra_neutral',  name: 'テトラボルテックス①', type: 'magic',    element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg3_tetra_earth',    name: 'テトラボルテックス②', type: 'magic',    element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg3_tetra_water',    name: 'テトラボルテックス③', type: 'magic',    element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
@@ -188,7 +189,7 @@ const ENEMY_LIST: EnemyData[] = [
     element: '無属性',
     isBoss: true,
     skills: [
-      { id: 'rg4_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true },
+      { id: 'rg4_earth_quake',    name: 'アースクエイク',      type: 'magic',    element: '地',     powerMultiplier:  7.5, hits: 1, isRanged: true, bypassSpecialReductions: true },
       { id: 'rg4_tetra_neutral',  name: 'テトラボルテックス①', type: 'magic',    element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg4_tetra_earth',    name: 'テトラボルテックス②', type: 'magic',    element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'rg4_tetra_water',    name: 'テトラボルテックス③', type: 'magic',    element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
@@ -387,10 +388,17 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
 
     const armorLookupElem = skill.armorCalcElement ?? skill.element
     const armorElemMod    = getElemMod(armorLookupElem, skill.elementLevel ?? 1, stats.armorElement)
-    const armorElemFactor = armorElemMod / 100
     const rangedFactor    = skill.isRanged ? Math.max(0, (100 - stats.rangedRes) / 100) : 1.0
 
     const stoneSkinFactor = stats.stoneSkinActive ? (isPhys ? 0.80 : 1.20) : 1.0
+
+    // bypassSpecialReductions: 鎧属性・金剛・うずくまる・アイアンハウリング・エナジーコートを無視
+    const bsr = skill.bypassSpecialReductions
+    const effArmorElemFactor = bsr ? 1.0 : armorElemMod / 100
+    const effKongouFactor      = bsr ? 1.0 : kongouFactor
+    const effCrouchFactor      = bsr ? 1.0 : crouchFactor
+    const effIronHowlingFactor = bsr ? 1.0 : ironHowlingFactor
+    const effEnergyCoatFactor  = bsr ? 1.0 : energyCoatFactor
 
     let afterResistances: number
     let afterHardDef: number
@@ -399,13 +407,13 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
     if (skill.bypassResistances) {
       // 貫通: 種族・ボス・属性耐性・Res・遠距離・除算DEF・減算DEF
       // 有効: 鎧属性・エナジーコート・金剛・うずくまる・アイアンハウリング・ストーンスキン
-      afterResistances   = rawBase * armorElemFactor * energyCoatFactor
+      afterResistances   = rawBase * (armorElemMod / 100) * energyCoatFactor
         * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor
       afterHardDef       = afterResistances
       hardDefReductionPct = 0
     } else {
-      afterResistances   = rawBase * raceFactor * elemFactor * armorElemFactor * bossFactor * specFactor * rangedFactor
-        * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor * energyCoatFactor
+      afterResistances   = rawBase * raceFactor * elemFactor * effArmorElemFactor * bossFactor * specFactor * rangedFactor
+        * effKongouFactor * effCrouchFactor * effIronHowlingFactor * stoneSkinFactor * effEnergyCoatFactor
       afterHardDef       = afterResistances * hardFactor
       hardDefReductionPct = (1 - hardFactor) * 100
     }
@@ -424,8 +432,8 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
       afterHardDef,
       statusDefUsed: sdUsed,
       elementResUsed: elemResValue,
-      armorElemMod,
-      armorCalcOverridden: !!skill.armorCalcElement && skill.armorCalcElement !== skill.element,
+      armorElemMod: bsr ? 100 : armorElemMod,
+      armorCalcOverridden: !bsr && !!skill.armorCalcElement && skill.armorCalcElement !== skill.element,
       perHit,
       total,
       hardDefReductionPct,
