@@ -884,7 +884,7 @@ const S: Record<string, React.CSSProperties> = {
   main: {
     flex: 1,
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(2, 1fr)',
     gap: '20px',
     padding: '24px 20px',
     maxWidth: '1400px',
@@ -1047,7 +1047,6 @@ const S: Record<string, React.CSSProperties> = {
   skillItemMeta: { fontSize: '0.7rem', color: C.textMuted },
 
   resultPanel: {
-    gridColumn: '1 / -1',
     borderColor: `${C.orange}40`,
     boxShadow: `0 4px 24px rgba(234,88,12,0.08)`,
   },
