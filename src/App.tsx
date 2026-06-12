@@ -111,7 +111,7 @@ const ENEMY_LIST: EnemyData[] = [
     skills: [
       { id: 'napalm_beat',  name: 'ナパームビート',     type: 'magic',    element: '念',     powerMultiplier: 3.0, hits: 1 },
       { id: 'holy_attack',  name: 'ホーリーアタック',   type: 'physical', element: '聖',     powerMultiplier: 2.5, hits: 1 },
-      { id: 'earth_quake',  name: 'アースクエイク',     type: 'magic',    element: '地',     powerMultiplier: 7.5, hits: 1 },
+      { id: 'earth_quake',  name: 'アースクエイク',     type: 'magic',    element: '地',     powerMultiplier: 7.5, hits: 1, isRanged: true },
       { id: 'bg_tetra_neutral', name: 'テトラボルテックス①', type: 'magic', element: '無属性', powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_earth',   name: 'テトラボルテックス②', type: 'magic', element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_water',   name: 'テトラボルテックス③', type: 'magic', element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
@@ -132,7 +132,7 @@ const ENEMY_LIST: EnemyData[] = [
     skills: [
       { id: 'df_holy_attack',    name: 'ホーリーアタック',       type: 'physical', element: '聖',     powerMultiplier:  2.5,  hits: 1 },
       { id: 'df_storm_gust',     name: 'ストームガスト',         type: 'magic',    element: '水',     powerMultiplier:  7.2,  hits: 1, notes: '倍率近似値' },
-      { id: 'df_earth_quake',    name: 'アースクエイク',         type: 'magic',    element: '地',     powerMultiplier:  7.5,  hits: 1 },
+      { id: 'df_earth_quake',    name: 'アースクエイク',         type: 'magic',    element: '地',     powerMultiplier:  7.5,  hits: 1, isRanged: true },
       { id: 'df_psychic_wave',   name: 'Mサイキックウェーブ',    type: 'magic',    element: '念',     powerMultiplier:  5.0,  hits: 3, notes: '3ヒット合計 ※倍率近似値' },
       { id: 'df_ray_genesis',    name: 'Mレイオブジェネシス',    type: 'magic',    element: '聖',     powerMultiplier: 20.0,  hits: 1, notes: '倍率近似値' },
       { id: 'df_tetra_neutral',  name: 'テトラボルテックス①',   type: 'magic',    element: '無属性', powerMultiplier: 25.0,  hits: 1, armorCalcElement: '無属性', notes: '無属性hit / 鎧相性は常に無属性扱い' },
