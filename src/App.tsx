@@ -41,7 +41,8 @@ interface Skill {
   hits: number
   isRanged?: boolean
   armorCalcElement?: string
-  bypassResistances?: boolean  // エナジーコートと鎧属性以外の全軽減を無視
+  bypassResistances?: boolean  // うずくまる・金剛・エナジーコート・アイアンハウリング・ストーンスキン以外を無視
+  fixedDamage?: number         // ATK計算を無視してこの値を rawBase に使用
   notes?: string
 }
 
@@ -115,7 +116,7 @@ const ENEMY_LIST: EnemyData[] = [
       { id: 'bg_tetra_earth',   name: 'テトラボルテックス②', type: 'magic', element: '地',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '地属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_water',   name: 'テトラボルテックス③', type: 'magic', element: '水',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '水属性hit / 鎧相性は常に無属性扱い' },
       { id: 'bg_tetra_fire',    name: 'テトラボルテックス④', type: 'magic', element: '火',     powerMultiplier: 25.0, hits: 1, armorCalcElement: '無属性', notes: '火属性hit / 鎧相性は常に無属性扱い' },
-      { id: 'killing_oura', name: 'キリングオーラ',     type: 'physical', element: '無属性', powerMultiplier: 8.0, hits: 1, bypassResistances: true, notes: '貫通攻撃: エナジーコート・念鎧のみ有効' },
+      { id: 'killing_oura', name: 'キリングオーラ',     type: 'physical', element: '無属性', powerMultiplier: 1.0, hits: 1, fixedDamage: 100000, bypassResistances: true },
       { id: 'wide_stone',   name: 'ワイドストーン',     type: 'magic',    element: '地',     powerMultiplier: 1.0, hits: 1 },
     ],
   },
@@ -317,7 +318,7 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
   return enemy.skills.map(skill => {
     const isPhys     = skill.type === 'physical'
     const baseAtk    = isPhys ? enemy.atk : enemy.matk
-    const rawBase    = baseAtk * skill.powerMultiplier
+    const rawBase    = skill.fixedDamage !== undefined ? skill.fixedDamage : baseAtk * skill.powerMultiplier
     const specFactor = isPhys ? resFactor : mresFactor
     const hardFactor = isPhys ? hardDefFactor : hardMdefFactor
     const sdUsed     = isPhys ? stats.statusDef : stats.statusMdef
@@ -338,9 +339,9 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
     let hardDefReductionPct: number
 
     if (skill.bypassResistances) {
-      // 貫通: 種族・ボス・属性耐性・Res・遠距離・除算DEF・減算DEF
-      // 有効: 鎧属性・エナジーコート・金剛・うずくまる・アイアンハウリング・ストーンスキン
-      afterResistances   = rawBase * armorElemFactor * energyCoatFactor
+      // 貫通: 種族・ボス・属性耐性・鎧属性・Res・遠距離・除算DEF・減算DEF
+      // 有効: エナジーコート・金剛・うずくまる・アイアンハウリング・ストーンスキン
+      afterResistances   = rawBase * energyCoatFactor
         * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor
       afterHardDef       = afterResistances
       hardDefReductionPct = 0
