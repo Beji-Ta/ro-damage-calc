@@ -26,6 +26,7 @@ interface PlayerStats {
   crouchActive: boolean
   ironHowlingActive: boolean
   stoneSkinActive: boolean
+  energyCoatLevel: number  // 0=OFF 1=10%カット 2=20%カット 3=30%カット
   armorElement: string
   mresIgnored: boolean
 }
@@ -249,7 +250,7 @@ function getElemMod(attackElem: string, attackLv: number, armorElem: string): nu
 
 // ── LocalStorage ───────────────────────────────────────────────────────────────
 
-const STORAGE_KEY = 'ro_calc_player_v8'
+const STORAGE_KEY = 'ro_calc_player_v9'
 
 const DEFAULT_STATS: PlayerStats = {
   statusDef: 100,
@@ -275,6 +276,7 @@ const DEFAULT_STATS: PlayerStats = {
   crouchActive: false,
   ironHowlingActive: false,
   stoneSkinActive: false,
+  energyCoatLevel: 0,
   armorElement: '無属性',
   mresIgnored: false,
 }
@@ -306,6 +308,7 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
   const kongouFactor      = stats.kongouActive      ? 0.10 : 1.0
   const crouchFactor      = stats.crouchActive      ? 0.20 : 1.0
   const ironHowlingFactor = stats.ironHowlingActive ? 0.60 : 1.0
+  const energyCoatFactor  = stats.energyCoatLevel > 0 ? 1 - stats.energyCoatLevel * 0.10 : 1.0
 
   return enemy.skills.map(skill => {
     const isPhys     = skill.type === 'physical'
@@ -326,7 +329,7 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
 
     const stoneSkinFactor = stats.stoneSkinActive ? (isPhys ? 0.80 : 1.20) : 1.0
     const afterResistances = rawBase * raceFactor * elemFactor * armorElemFactor * bossFactor * specFactor * rangedFactor
-      * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor
+      * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor * energyCoatFactor
     const afterHardDef     = afterResistances * hardFactor
     const perHit           = Math.max(1, Math.floor(afterHardDef - sdUsed))
     const total            = perHit * skill.hits
@@ -522,6 +525,18 @@ export default function App() {
               onToggle={() => toggle('stoneSkinActive')}
               activeColor={C.teal}
             />
+            <StepToggleRow
+              label="エナジーコート"
+              description="SP残量に応じてダメージカット — 多い: 30% / 中: 20% / 少ない: 10%"
+              level={stats.energyCoatLevel}
+              steps={[
+                { label: '10%', value: 1 },
+                { label: '20%', value: 2 },
+                { label: '30%', value: 3 },
+              ]}
+              onStep={v => setStats(prev => ({ ...prev, energyCoatLevel: v }))}
+              activeColor={C.blue}
+            />
           </div>
 
           <SectionLabel color={C.gold}>特殊トグル</SectionLabel>
@@ -601,6 +616,7 @@ export default function App() {
               {stats.crouchActive      && <ParamChip label="うずくまる"     value="×0.20" color={C.gold} />}
               {stats.ironHowlingActive && <ParamChip label="アイアンハウリング" value="×0.60" color={C.gold} />}
               {stats.stoneSkinActive   && <ParamChip label="ストーンスキン" value="物理×0.80 魔法×1.20" color={C.teal} />}
+              {stats.energyCoatLevel > 0 && <ParamChip label="エナジーコート" value={`×${(1 - stats.energyCoatLevel * 0.10).toFixed(2)}`} color={C.blue} />}
               {stats.mresIgnored && <ParamChip label="Mres無視" value="ON" color={C.danger} />}
             </div>
           )}
@@ -726,6 +742,51 @@ function ToggleRow({ label, description, active, onToggle, activeColor }: {
       >
         {active ? 'ON' : 'OFF'}
       </button>
+    </div>
+  )
+}
+
+function StepToggleRow({ label, description, level, steps, onStep, activeColor }: {
+  label: string; description: string; level: number
+  steps: { label: string; value: number }[]
+  onStep: (v: number) => void; activeColor: string
+}) {
+  const active = level > 0
+  return (
+    <div style={{
+      ...S.toggleRow,
+      border: `2px solid ${active ? activeColor : '#e5e7eb'}`,
+      background: active ? `${activeColor}12` : '#f9fafb',
+    }}>
+      <div style={{ flex: 1 }}>
+        <div style={{ ...S.toggleLabel, color: active ? activeColor : C.textPrimary }}>{label}</div>
+        <div style={S.toggleDesc}>{description}</div>
+      </div>
+      <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>
+        <button
+          style={{
+            ...S.toggleBtn,
+            fontSize: '0.7rem', padding: '4px 8px',
+            color: level === 0 ? '#fff' : C.textMuted,
+            background: level === 0 ? '#6b7280' : '#e5e7eb',
+            border: 'none',
+          }}
+          onClick={() => onStep(0)}
+        >OFF</button>
+        {steps.map(s => (
+          <button
+            key={s.value}
+            style={{
+              ...S.toggleBtn,
+              fontSize: '0.7rem', padding: '4px 8px',
+              color: level === s.value ? '#fff' : C.textMuted,
+              background: level === s.value ? activeColor : '#e5e7eb',
+              border: 'none',
+            }}
+            onClick={() => onStep(s.value)}
+          >{s.label}</button>
+        ))}
+      </div>
     </div>
   )
 }
