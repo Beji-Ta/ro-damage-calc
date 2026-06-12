@@ -338,8 +338,10 @@ function calcDamage(stats: PlayerStats, enemy: EnemyData): DamageResult[] {
     let hardDefReductionPct: number
 
     if (skill.bypassResistances) {
-      // エナジーコートと鎧属性のみ有効、他は全貫通
+      // 貫通: 種族・ボス・属性耐性・Res・遠距離・除算DEF・減算DEF
+      // 有効: 鎧属性・エナジーコート・金剛・うずくまる・アイアンハウリング・ストーンスキン
       afterResistances   = rawBase * armorElemFactor * energyCoatFactor
+        * kongouFactor * crouchFactor * ironHowlingFactor * stoneSkinFactor
       afterHardDef       = afterResistances
       hardDefReductionPct = 0
     } else {
