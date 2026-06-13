@@ -1284,7 +1284,7 @@ const S: Record<string, React.CSSProperties> = {
   },
 
   formulaDisplay: {
-    display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'flex-start',
+    display: 'flex', flexWrap: 'wrap', gap: '5px', alignItems: 'center',
     minHeight: '56px', padding: '10px 12px',
     background: '#fffbf0', border: `2px solid ${C.panelBorder}`,
     borderRadius: '10px', overflowX: 'auto',
