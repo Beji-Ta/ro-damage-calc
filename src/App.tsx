@@ -407,6 +407,7 @@ function FormulaBuilder({
   const [selTemplate, setSelTemplate] = useState(FORMULA_TEMPLATES[0].id)
   const [saveMsg, setSaveMsg] = useState('')
   const [showGuide, setShowGuide] = useState(false)
+  const [showSaveHelp, setShowSaveHelp] = useState(false)
   const [insertAfterIdx, setInsertAfterIdx] = useState<number | null>(null)
 
   const addToken = (t: Omit<FormulaToken, 'id'>) => {
@@ -747,8 +748,122 @@ function FormulaBuilder({
           onClick={() => { onTokensChange([]); onFormulaNameChange('') }}>
           計算式をクリア
         </button>
+        <button onClick={() => setShowSaveHelp(p => !p)}
+          style={{ fontSize:'0.65rem', padding:'2px 9px', borderRadius:'4px', cursor:'pointer',
+            background: showSaveHelp ? `${C.green}30` : '#f3f4f6',
+            border:`1px solid ${showSaveHelp ? C.green : '#e5e7eb'}`,
+            color: showSaveHelp ? '#166534' : C.textMuted, fontWeight:700, letterSpacing:0, marginLeft:'auto' }}>
+          {showSaveHelp ? '▲ ヘルプを閉じる' : '❓ 保存・設定ヘルプ'}
+        </button>
         {saveMsg && <span style={{ fontSize:'0.78rem', color:C.green, fontWeight:700 }}>{saveMsg}</span>}
       </div>
+
+      {/* ── 保存・設定ヘルプ ── */}
+      {showSaveHelp && (
+        <div style={{ background:'#f0fdf4', border:'1.5px solid #22c55e', borderRadius:'8px',
+          padding:'13px 15px', fontSize:'0.73rem', lineHeight:1.7, marginTop:'2px' }}>
+
+          <p style={{ fontWeight:700, color:'#166534', margin:'0 0 10px 0', fontSize:'0.78rem' }}>
+            計算式の設定項目と保存について
+          </p>
+
+          {/* 設定項目一覧 */}
+          {([
+            [C.purple,  '計算式名',
+              '計算式フィールド上部のテキスト入力欄（「計算式名（任意）」と表示）。',
+              '保存時の識別名になります。結果パネルにも表示されます。',
+              '⚠ 保存ボタンを押す前に必ず入力してください。空のまま押すとエラーになります。'],
+            [C.orange,  '式の種類（物理 / 魔法）',
+              '「⚔️ 物理」「✨ 魔法」ボタンで切り替え。計算式と一緒に保存されます。',
+              'テンプレートを「適用」すると自動的にそのテンプレートの種類に切り替わります。',
+              'ストーンスキン効果の倍率（物理×0.80 / 魔法×1.20）に使われます。'],
+            [C.teal,    '攻撃属性',
+              '「鎧相性」変数(ARMOR_MOD)が参照する攻撃側の属性です。',
+              '計算式ファイルには保存されません（画面を閉じても最後の選択値が復元されます）。',
+              'ARMOR_MOD_火 など固定属性変数を使う場合はこの設定は影響しません。'],
+            [C.purple,  'テンプレート',
+              'ドロップダウンで「組み込みテンプレート」または「保存済み計算式(★)」を選択し「適用」ボタンを押すと、',
+              '計算式・式の種類・計算式名が一括で展開されます。',
+              '保存済み計算式はドロップダウン下段（★マーク付き）に表示されます。'],
+          ] as [string, string, string, string, string][]).map(([col, title, l1, l2, l3], i) => (
+            <div key={i} style={{ marginBottom:'10px', paddingLeft:'8px',
+              borderLeft:`3px solid ${col}`, paddingBottom:'4px' }}>
+              <div style={{ fontWeight:700, color:col, marginBottom:'2px', fontSize:'0.74rem' }}>{title}</div>
+              <div style={{ color:'#374151', fontSize:'0.7rem' }}>{l1}</div>
+              <div style={{ color:'#374151', fontSize:'0.7rem' }}>{l2}</div>
+              <div style={{ color:'#6b7280', fontSize:'0.68rem', marginTop:'2px' }}>{l3}</div>
+            </div>
+          ))}
+
+          {/* 保存の流れ */}
+          <p style={{ fontWeight:700, color:'#166534', margin:'10px 0 6px 0', fontSize:'0.74rem' }}>
+            保存の手順（推移図）
+          </p>
+
+          {/* Step 1 */}
+          <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#166534', marginBottom:'3px' }}>
+            ① 計算式名を入力する
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap',
+            background:'#fff', border:'1px solid #d1fae5', borderRadius:'6px',
+            padding:'6px 10px', marginBottom:'4px' }}>
+            <span style={{ fontSize:'0.7rem', color:'#6b7280' }}>計算式名:</span>
+            <span style={{ display:'inline-block', padding:'3px 12px', borderRadius:'4px',
+              border:`1.5px solid ${C.green}`, background:`${C.green}10`,
+              fontSize:'0.7rem', color:'#166534', fontWeight:700, minWidth:'120px' }}>
+              例）アースクエイク被ダメ
+            </span>
+          </div>
+
+          <div style={{ textAlign:'center', color:'#15803d', fontWeight:700, margin:'3px 0', fontSize:'0.72rem' }}>
+            ↓ 計算式を組み立てたら
+          </div>
+
+          {/* Step 2 */}
+          <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#166534', marginBottom:'3px' }}>
+            ② 「この計算式を保存」ボタンを押す
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap',
+            background:'#fff', border:'1px solid #d1fae5', borderRadius:'6px',
+            padding:'6px 10px', marginBottom:'4px' }}>
+            <span style={{ display:'inline-flex', alignItems:'center', padding:'5px 14px',
+              borderRadius:'6px', background:C.green, color:'#fff',
+              fontSize:'0.73rem', fontWeight:700, gap:'4px' }}>
+              この計算式を保存
+            </span>
+            <span style={{ fontSize:'0.68rem', color:'#15803d' }}>→ 「アースクエイク被ダメ」を保存しました と表示</span>
+          </div>
+
+          <div style={{ textAlign:'center', color:'#15803d', fontWeight:700, margin:'3px 0', fontSize:'0.72rem' }}>
+            ↓ 保存完了
+          </div>
+
+          {/* Step 3 */}
+          <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#166534', marginBottom:'3px' }}>
+            ③ テンプレートドロップダウンに「★ アースクエイク被ダメ」として追加される
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:'8px', flexWrap:'wrap',
+            background:'#fff', border:'1px solid #d1fae5', borderRadius:'6px',
+            padding:'6px 10px', marginBottom:'2px' }}>
+            <div style={{ padding:'4px 10px', border:`1px solid #d1fae5`, borderRadius:'4px',
+              background:'#f9fafb', fontSize:'0.7rem', minWidth:'180px' }}>
+              <div style={{ color:'#9ca3af', fontSize:'0.62rem', marginBottom:'2px' }}>── 保存済み計算式 ──</div>
+              <div style={{ color:'#166534', fontWeight:700 }}>★ アースクエイク被ダメ</div>
+            </div>
+            <div style={{ display:'flex', gap:'6px' }}>
+              <span style={{ display:'inline-flex', alignItems:'center', padding:'4px 10px',
+                borderRadius:'6px', background:C.purple, color:'#fff', fontSize:'0.7rem', fontWeight:700 }}>適用</span>
+              <span style={{ display:'inline-flex', alignItems:'center', padding:'4px 10px',
+                borderRadius:'6px', background:C.danger, color:'#fff', fontSize:'0.7rem', fontWeight:700 }}>削除</span>
+            </div>
+          </div>
+
+          <p style={{ color:'#6b7280', margin:'8px 0 0 0', fontSize:'0.67rem' }}>
+            ✔ 保存した計算式はブラウザのローカルストレージに自動保存され、次回も復元されます。<br/>
+            ✔ JSONエクスポートで別の端末に移行することもできます（画面上部「データ管理」）。
+          </p>
+        </div>
+      )}
 
       {/* 注記 */}
       <div style={{ fontSize:'0.68rem', color:C.textMuted, lineHeight:1.6, background:'#fffbf0', padding:'8px 10px', borderRadius:'8px', border:`1px solid ${C.panelBorder}` }}>
