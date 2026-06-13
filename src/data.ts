@@ -110,8 +110,8 @@ export const FORMULA_VARS: FormulaVarDef[] = [
   { key: 'INT',  label: '敵INT',  group: '敵ステータス', desc: '敵のINT' },
   { key: 'LUK',  label: '敵LUK',  group: '敵ステータス', desc: '敵のLUK' },
   // DEF値
-  { key: 'STATUS_DEF',       label: '減算DEF',          group: 'DEF値', desc: '⌊Lv/2⌋+⌊AGI/5⌋+⌊VIT/2⌋' },
-  { key: 'STATUS_MDEF',      label: '減算MDEF',         group: 'DEF値', desc: '⌊Lv/4⌋+⌊VIT/5⌋+INT+⌊DEX/5⌋' },
+  { key: 'STATUS_DEF',       label: '減算DEF',          group: 'DEF値', desc: 'プレイヤーの減算DEF' },
+  { key: 'STATUS_MDEF',      label: '減算MDEF',         group: 'DEF値', desc: 'プレイヤーの減算MDEF' },
   { key: 'EQUIP_DEF',        label: '装備除算DEF(※)',   group: 'DEF値', desc: '装備除算DEF（アスムプティオ時×2）' },
   { key: 'EQUIP_MDEF',       label: '装備除算MDEF(※)',  group: 'DEF値', desc: '装備除算MDEF（アスムプティオ時×2）' },
   { key: 'HARD_DEF_FACTOR',  label: '除算DEF係数',   group: 'DEF値', desc: '(4000+DEF)/(4000+DEF×10),min0.10' },

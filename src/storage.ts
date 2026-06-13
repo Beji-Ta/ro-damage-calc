@@ -3,11 +3,8 @@ import type { AppSaveData, PlayerStats, EnemyInput } from './types'
 const STORAGE_KEY = 'ro_calc_v11'
 
 export const DEFAULT_PLAYER_STATS: PlayerStats = {
-  baseLv: 200,
-  agi: 0,
-  vit: 0,
-  intStat: 0,
-  dex: 0,
+  statusDef: 100,
+  statusMdef: 60,
   equipDef: 0,
   equipMdef: 0,
   res: 0,

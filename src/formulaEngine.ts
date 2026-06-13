@@ -4,16 +4,14 @@ import { FORMULA_VARS, getElemMod } from './data'
 export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput): Record<string, number> {
   const eDef  = stats.assumptioActive ? stats.equipDef  * 2 : stats.equipDef
   const eMdef = stats.assumptioActive ? stats.equipMdef * 2 : stats.equipMdef
-  const subDef  = Math.floor(stats.baseLv / 2) + Math.floor(stats.agi / 5) + Math.floor(stats.vit / 2)
-  const subMdef = Math.floor(stats.baseLv / 4) + Math.floor(stats.vit / 5) + stats.intStat + Math.floor(stats.dex / 5)
   return {
     ATK:  enemy.atk,
     MATK: enemy.matk,
     STR:  enemy.str,
     INT:  enemy.int,
     LUK:  enemy.luk,
-    STATUS_DEF:       subDef,
-    STATUS_MDEF:      subMdef,
+    STATUS_DEF:       stats.statusDef,
+    STATUS_MDEF:      stats.statusMdef,
     EQUIP_DEF:        eDef,
     EQUIP_MDEF:       eMdef,
     HARD_DEF_FACTOR:  Math.max(0.10, (4000 + eDef)  / (4000 + eDef  * 10)),
