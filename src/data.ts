@@ -169,7 +169,7 @@ export const FORMULA_TEMPLATES: FormulaConfig[] = [
     isBuiltin: true,
     tokens: mkTokens([
       ['var','MATK'], ['op','*'], ['num',7.5],
-      ['op','*'], ['var','ARMOR_MOD_EARTH'], ['op','/'], ['num',100],
+      ['op','*'], ['var','ARMOR_MOD_NEUTRAL'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','RANGED_RES'], ['op',')'],
       ['op','/'], ['num',100],
     ]),
