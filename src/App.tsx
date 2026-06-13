@@ -334,6 +334,7 @@ function FormulaBuilder({
   const [numInput, setNumInput] = useState('')
   const [selTemplate, setSelTemplate] = useState(FORMULA_TEMPLATES[0].id)
   const [saveMsg, setSaveMsg] = useState('')
+  const [showGuide, setShowGuide] = useState(false)
   const [insertAfterIdx, setInsertAfterIdx] = useState<number | null>(null)
 
   const addToken = (t: Omit<FormulaToken, 'id'>) => {
@@ -442,9 +443,17 @@ function FormulaBuilder({
 
       {/* 計算式フィールド */}
       <div>
-        <div style={{ fontSize:'0.68rem', color:C.textMuted, fontWeight:700, marginBottom:'6px', letterSpacing:'0.1em' }}>
-          計算式フィールド
-          {tokens.length === 0 && <span style={{ color:C.textMuted, fontStyle:'italic', marginLeft:'8px', textTransform:'none' }}>（空）</span>}
+        <div style={{ fontSize:'0.68rem', color:C.textMuted, fontWeight:700, marginBottom:'6px',
+          letterSpacing:'0.1em', display:'flex', alignItems:'center', gap:'6px' }}>
+          <span>計算式フィールド</span>
+          {tokens.length === 0 && <span style={{ color:C.textMuted, fontStyle:'italic', fontWeight:400 }}>（空）</span>}
+          <button onClick={() => setShowGuide(p => !p)}
+            style={{ marginLeft:'auto', fontSize:'0.65rem', padding:'2px 9px', borderRadius:'4px', cursor:'pointer',
+              background: showGuide ? `${C.gold}30` : '#f3f4f6',
+              border:`1px solid ${showGuide ? C.gold : '#e5e7eb'}`,
+              color: showGuide ? '#92400e' : C.textMuted, fontWeight:700, letterSpacing:0 }}>
+            {showGuide ? '▲ ガイドを閉じる' : '❓ 操作ガイド'}
+          </button>
         </div>
         <div style={S.formulaDisplay} onClick={() => setInsertAfterIdx(null)}>
           {tokens.length === 0
@@ -491,6 +500,91 @@ function FormulaBuilder({
             ? `▶ ${insertAfterIdx + 1}番目の後に挿入（背景クリックで末尾追加に戻す）`
             : 'トークンをクリックして挿入位置を選択（未選択時は末尾に追加）'}
         </div>
+
+        {/* ── 操作ガイド ── */}
+        {showGuide && (
+          <div style={{ background:'#fefce8', border:'1.5px solid #fbbf24', borderRadius:'8px',
+            padding:'13px 15px', fontSize:'0.73rem', lineHeight:1.65, marginTop:'6px' }}>
+
+            <p style={{ fontWeight:700, color:'#92400e', margin:'0 0 8px 0' }}>操作方法</p>
+            {([
+              ['トークンをクリック',       'そのトークンの直後を挿入位置に設定（ハイライト＋カーソルバー表示）'],
+              ['演算子・変数ボタンを押す', 'カーソル位置の直後に挿入。連続で押すと右に移動'],
+              ['同じトークンを再クリック', '選択解除 → 末尾追加モードに戻る'],
+              ['フィールド背景をクリック', '選択解除 → 末尾追加モードに戻る'],
+            ] as [string,string][]).map(([k, v], i) => (
+              <div key={i} style={{ display:'flex', gap:'6px', marginBottom:'3px', flexWrap:'wrap' }}>
+                <span style={{ fontWeight:700, color:'#78350f', minWidth:'160px', flexShrink:0 }}>{k}</span>
+                <span style={{ color:'#44403c' }}>→ {v}</span>
+              </div>
+            ))}
+
+            <p style={{ fontWeight:700, color:'#92400e', margin:'12px 0 6px 0' }}>操作例（推移図）</p>
+            <p style={{ color:'#78716c', margin:'0 0 8px 0', fontSize:'0.68rem' }}>
+              例：「敵ATK × 種族耐性%」の間に数値「100」を挿入する
+            </p>
+
+            {/* ① クリック前 */}
+            <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#b45309', marginBottom:'3px' }}>
+              ① クリック前（末尾追加モード）
+            </div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'3px', alignItems:'center',
+              background:'#fff', border:'1px solid #e5e7eb', borderRadius:'6px', padding:'6px 8px', marginBottom:'2px' }}>
+              {[['敵ATK', C.orange], ['×', '#6b7280'], ['種族耐性%', C.green]].map(([lbl, col], i) => (
+                <span key={i} style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                  fontWeight:700, background:`${col}18`, border:`1.5px solid ${col}55`, color:col }}>{lbl}</span>
+              ))}
+            </div>
+
+            <div style={{ textAlign:'center', color:'#7c3aed', fontWeight:700, margin:'4px 0', fontSize:'0.78rem' }}>
+              ↓「×」トークンをクリック
+            </div>
+
+            {/* ② 選択後 */}
+            <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#b45309', marginBottom:'3px' }}>
+              ② 挿入位置を選択（「×」の直後にカーソル）
+            </div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'3px', alignItems:'center',
+              background:'#fff', border:'1px solid #e5e7eb', borderRadius:'6px', padding:'6px 8px', marginBottom:'2px' }}>
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:`${C.orange}18`, border:`1.5px solid ${C.orange}55`, color:C.orange }}>敵ATK</span>
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:'#6b728018', border:`1.5px solid #6b7280`, color:'#6b7280',
+                outline:'2px solid #6b728080', boxShadow:'0 0 6px #6b728045' }}>×</span>
+              <span style={{ display:'inline-block', width:'3px', background:C.gold,
+                borderRadius:'2px', margin:'0 1px', height:'20px', alignSelf:'stretch' }} />
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:`${C.green}18`, border:`1.5px solid ${C.green}55`, color:C.green }}>種族耐性%</span>
+            </div>
+
+            <div style={{ textAlign:'center', color:'#7c3aed', fontWeight:700, margin:'4px 0', fontSize:'0.78rem' }}>
+              ↓ 数値「100」を追加
+            </div>
+
+            {/* ③ 挿入後 */}
+            <div style={{ fontSize:'0.68rem', fontWeight:700, color:'#b45309', marginBottom:'3px' }}>
+              ③ 挿入完了（カーソルが次の位置に移動）
+            </div>
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'3px', alignItems:'center',
+              background:'#fff', border:'1px solid #e5e7eb', borderRadius:'6px', padding:'6px 8px', marginBottom:'2px' }}>
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:`${C.orange}18`, border:`1.5px solid ${C.orange}55`, color:C.orange }}>敵ATK</span>
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:'#6b728018', border:`1.5px solid ${C.blue}55`, color:'#6b7280' }}>×</span>
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:`${C.blue}18`, border:`1.5px solid ${C.blue}`, color:C.blue,
+                outline:`2px solid ${C.blue}80`, boxShadow:`0 0 6px ${C.blue}45` }}>100</span>
+              <span style={{ display:'inline-block', width:'3px', background:C.gold,
+                borderRadius:'2px', margin:'0 1px', height:'20px', alignSelf:'stretch' }} />
+              <span style={{ display:'inline-flex', padding:'2px 7px', borderRadius:'4px', fontSize:'0.7rem',
+                fontWeight:700, background:`${C.green}18`, border:`1.5px solid ${C.green}55`, color:C.green }}>種族耐性%</span>
+            </div>
+
+            <p style={{ color:'#78716c', margin:'6px 0 0 0', fontSize:'0.68rem' }}>
+              ✔ そのまま続けてボタンを押すと「100」の直後にさらに挿入できます
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 演算子パレット */}
