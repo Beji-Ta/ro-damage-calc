@@ -82,8 +82,12 @@ export default function App() {
     ? evaluateFormulaFull(activeFormula, playerStats, enemyInput)
     : null
 
-  const defPct  = (playerStats.equipDef  / (playerStats.equipDef  + 135)) * 100
-  const mdefPct = (playerStats.equipMdef / (playerStats.equipMdef + 135)) * 100
+  const defMult  = Math.max(0.10, (4000 + playerStats.equipDef)  / (4000 + playerStats.equipDef  * 10))
+  const mdefMult = Math.max(0.10, (1000 + playerStats.equipMdef) / (1000 + playerStats.equipMdef * 10))
+  const defPct   = (1 - defMult)  * 100
+  const mdefPct  = (1 - mdefMult) * 100
+  const subDef   = Math.floor(playerStats.baseLv / 2) + Math.floor(playerStats.agi / 5) + Math.floor(playerStats.vit / 2)
+  const subMdef  = Math.floor(playerStats.baseLv / 4) + Math.floor(playerStats.vit / 5) + playerStats.intStat + Math.floor(playerStats.dex / 5)
   const resPct  = (1 - (2000 + playerStats.res)  / (2000 + playerStats.res  * 5)) * 100
   const mresPct = (1 - (2000 + playerStats.mres) / (2000 + playerStats.mres * 5)) * 100
 
@@ -142,10 +146,17 @@ export default function App() {
             <button style={S.resetBtn} onClick={() => setPlayerStats({...DEFAULT_PLAYER_STATS})}>リセット</button>
           </PanelHeader>
 
-          <SectionLabel color={C.blue}>減算防御</SectionLabel>
+          <SectionLabel color={C.blue}>キャラクターステータス</SectionLabel>
           <div style={S.statsGrid}>
-            <NumField label="減算DEF"  value={playerStats.statusDef}  min={0} max={99999} onChange={v=>setNum('statusDef',v)}  color={C.blue} />
-            <NumField label="減算MDEF" value={playerStats.statusMdef} min={0} max={99999} onChange={v=>setNum('statusMdef',v)} color={C.purple} />
+            <NumField label="BaseLv" value={playerStats.baseLv}  min={1} max={250} onChange={v=>setNum('baseLv',v)}  color={C.blue} />
+            <NumField label="AGI"    value={playerStats.agi}     min={1} max={999} onChange={v=>setNum('agi',v)}     color={C.blue} />
+            <NumField label="VIT"    value={playerStats.vit}     min={1} max={999} onChange={v=>setNum('vit',v)}     color={C.blue} />
+            <NumField label="INT"    value={playerStats.intStat} min={1} max={999} onChange={v=>setNum('intStat',v)} color={C.purple} />
+            <NumField label="DEX"    value={playerStats.dex}     min={1} max={999} onChange={v=>setNum('dex',v)}     color={C.purple} />
+          </div>
+          <div style={S.derivedRow}>
+            <DerivedStat label="減算DEF (SubDef)"   value={String(subDef)}  color={C.blue} />
+            <DerivedStat label="減算MDEF (SubMdef)" value={String(subMdef)} color={C.purple} />
           </div>
 
           <SectionLabel color={C.blue}>装備 除算DEF / MDEF</SectionLabel>

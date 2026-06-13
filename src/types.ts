@@ -1,6 +1,9 @@
 export interface PlayerStats {
-  statusDef: number
-  statusMdef: number
+  baseLv: number
+  agi: number
+  vit: number
+  intStat: number
+  dex: number
   equipDef: number
   equipMdef: number
   res: number

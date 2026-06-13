@@ -4,18 +4,20 @@ import { FORMULA_VARS, getElemMod } from './data'
 export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput): Record<string, number> {
   const eDef  = stats.assumptioActive ? stats.equipDef  * 2 : stats.equipDef
   const eMdef = stats.assumptioActive ? stats.equipMdef * 2 : stats.equipMdef
+  const subDef  = Math.floor(stats.baseLv / 2) + Math.floor(stats.agi / 5) + Math.floor(stats.vit / 2)
+  const subMdef = Math.floor(stats.baseLv / 4) + Math.floor(stats.vit / 5) + stats.intStat + Math.floor(stats.dex / 5)
   return {
     ATK:  enemy.atk,
     MATK: enemy.matk,
     STR:  enemy.str,
     INT:  enemy.int,
     LUK:  enemy.luk,
-    STATUS_DEF:       stats.statusDef,
-    STATUS_MDEF:      stats.statusMdef,
+    STATUS_DEF:       subDef,
+    STATUS_MDEF:      subMdef,
     EQUIP_DEF:        eDef,
     EQUIP_MDEF:       eMdef,
-    HARD_DEF_FACTOR:  135 / (eDef  + 135),
-    HARD_MDEF_FACTOR: 135 / (eMdef + 135),
+    HARD_DEF_FACTOR:  Math.max(0.10, (4000 + eDef)  / (4000 + eDef  * 10)),
+    HARD_MDEF_FACTOR: Math.max(0.10, (1000 + eMdef) / (1000 + eMdef * 10)),
     RES:              stats.res,
     MRES:             stats.mres,
     RES_FACTOR:       (2000 + stats.res)  / (2000 + stats.res  * 5),
@@ -121,7 +123,7 @@ export function evaluateFormulaFull(
 
   const totalFactor = stateFactors.reduce((acc, s) => acc * s.factor, 1)
   const finalResult = baseResult * totalFactor
-  const perHit = Math.max(1, Math.floor(finalResult))
+  const perHit = Math.max(0, Math.floor(finalResult))
 
   return { formulaStr, substitutedStr, varValues, baseResult, stateFactors, finalResult, perHit, error }
 }
