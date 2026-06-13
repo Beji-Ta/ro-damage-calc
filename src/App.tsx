@@ -12,41 +12,63 @@ import {
 import { evaluateFormulaFull, resolveFormulaValues, cloneTokens, newId } from './formulaEngine'
 
 // ── App ────────────────────────────────────────────────────────────────────────
+// アプリケーション全体のルートコンポーネント。
+// 4パネル（プレイヤーステータス・耐性設定・特殊設定＆計算式・計算結果）を管理し、
+// 全状態の保持・自動保存・インポート/エクスポートを担う。
 
 export default function App() {
+  // ── 主要な状態変数 ──
   const [playerStats, setPlayerStats] = useState<PlayerStats>(() => loadData().playerStats)
+  // 敵ステータス入力欄の値
   const [enemyInput, setEnemyInput]   = useState<EnemyInput>(() => loadData().enemyInput)
+  // ユーザーが保存した計算式の一覧
   const [customFormulas, setCustomFormulas] = useState<FormulaConfig[]>(() => loadData().customFormulas)
+  // 計算式フィールドに現在並んでいるトークン列
   const [activeTokens, setActiveTokens]     = useState<FormulaToken[]>(() => loadData().activeFormulaTokens)
+  // 現在の式の種類（物理/魔法）
   const [activeDmgType, setActiveDmgType]         = useState<'physical'|'magic'>(() => loadData().activeFormulaDamageType)
+  // 計算式ビルダーの攻撃属性セレクタの現在値（ARMOR_MOD 変数が参照する）
   const [activeAttackElem, setActiveAttackElem]   = useState<string>(() => loadData().activeFormulaAttackElement ?? '無属性')
+  // 計算式名の入力値
   const [activeFormName, setActiveFormName]       = useState<string>(() => loadData().activeFormulaName)
+  // JSON インポート失敗時のエラーメッセージ
   const [importErr, setImportErr] = useState<string>('')
+  // 鎧属性セクションの属性相性表ヘルプの表示フラグ
   const [showArmorHelp, setShowArmorHelp] = useState(false)
+  // ファイル入力 <input type="file"> への参照（インポート後に値をリセットするために使用）
   const importRef = useRef<HTMLInputElement>(null)
 
-  // auto-save
+  // ── 自動保存 ──
+  // いずれかの状態が変化するたびに localStorage へ全データを保存する
   useEffect(() => {
     saveData({ version:11, playerStats, enemyInput, customFormulas,
       activeFormulaTokens: activeTokens, activeFormulaDamageType: activeDmgType,
       activeFormulaAttackElement: activeAttackElem, activeFormulaName: activeFormName })
   }, [playerStats, enemyInput, customFormulas, activeTokens, activeDmgType, activeAttackElem, activeFormName])
 
+  // ── プレイヤーステータス更新ヘルパー ──
+  // 数値入力フィールドの変更を playerStats に反映する（空文字は 0 として扱う）
   const setNum = useCallback((key: keyof PlayerStats, raw: string) => {
     const n = raw === '' ? 0 : parseInt(raw, 10)
     if (!isNaN(n)) setPlayerStats(p => ({ ...p, [key]: n }))
   }, [])
+  // 文字列フィールド（鎧属性など）の変更を playerStats に反映する
   const setStr = useCallback((key: keyof PlayerStats, v: string) => {
     setPlayerStats(p => ({ ...p, [key]: v }))
   }, [])
+  // boolean フィールド（特殊状態フラグなど）を反転させる
   const toggle = useCallback((key: keyof PlayerStats) => {
     setPlayerStats(p => ({ ...p, [key]: !p[key] }))
   }, [])
+  // 敵ステータス数値フィールドの変更を enemyInput に反映する
   const setEnemyNum = useCallback((key: keyof EnemyInput, raw: string) => {
     const n = raw === '' ? 0 : parseInt(raw, 10)
     if (!isNaN(n)) setEnemyInput(p => ({ ...p, [key]: n }))
   }, [])
 
+  // ── JSON インポート処理 ──
+  // ファイル選択ダイアログで選ばれた JSON ファイルを読み込み、
+  // 全状態を一括で上書き更新する。失敗時はエラーメッセージを表示する。
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -63,35 +85,46 @@ export default function App() {
     } catch (err) {
       setImportErr(err instanceof Error ? err.message : 'インポート失敗')
     }
+    // 同じファイルを再度選択できるように input の値をリセットする
     if (importRef.current) importRef.current.value = ''
   }
 
+  // ── 計算式の保存 ──
+  // 現在の計算式フィールドの内容・式の種類・名前を新しい FormulaConfig として保存する。
+  // 名前が空の場合は保存しない（バリデーションは FormulaBuilder 内でも行っている）。
   const handleSaveFormula = (name: string) => {
     if (!name.trim()) return
     const cfg: FormulaConfig = {
       id: newId(), name: name.trim(),
-      tokens: cloneTokens(activeTokens),
+      tokens: cloneTokens(activeTokens), // 元トークンを複製して独立した保存済み式にする
       damageType: activeDmgType,
     }
     setCustomFormulas(prev => [...prev, cfg])
   }
+  // ── 保存済み計算式の削除 ──
+  // 指定した id を持つカスタム計算式を一覧から除去する
   const handleDeleteCustomFormula = (id: string) => {
     setCustomFormulas(prev => prev.filter(f => f.id !== id))
   }
 
+  // ── 評価用の一時的な FormulaConfig を組み立てる ──
+  // 保存はしていないが evaluateFormulaFull に渡すために必要な構造体
   const activeFormula: FormulaConfig = {
     id: 'active', name: activeFormName, tokens: activeTokens, damageType: activeDmgType
   }
+  // トークンが存在する場合のみ計算式を評価してパネル4に結果を渡す
   const evalResult = activeTokens.length > 0
     ? evaluateFormulaFull(activeFormula, playerStats, enemyInput, activeAttackElem)
     : null
 
+  // ── 派生表示値の事前計算 ──
+  // 各係数をパーセント軽減率として表示するために変換する（「除算軽減率」表示欄用）
   const defPct  = (1 - Math.max(0.10, (4000 + playerStats.equipDef)  / (4000 + playerStats.equipDef  * 10))) * 100
   const mdefPct = (1 - Math.max(0.10, (1000 + playerStats.equipMdef) / (1000 + playerStats.equipMdef * 10))) * 100
   const resPct  = (1 - (2000 + playerStats.res)  / (2000 + playerStats.res  * 5)) * 100
   const mresPct = (1 - (2000 + playerStats.mres) / (2000 + playerStats.mres * 5)) * 100
 
-  // pre-compute all variable values (for palette display + formula evaluation)
+  // 変数パレットへの現在値表示と計算式評価に共通して使う変数値マップを事前計算する
   const paletteValues = resolveFormulaValues(playerStats, enemyInput, activeAttackElem)
 
   return (
@@ -361,8 +394,11 @@ export default function App() {
 }
 
 // ── EnemyPresetSelector ────────────────────────────────────────────────────────
+// 敵プリセット選択コンポーネント。ドロップダウンで敵を選び「適用」で
+// 敵ステータス入力欄を一括上書きする。
 
 function EnemyPresetSelector({ onApply }: { onApply: (p: typeof ENEMY_PRESETS[0]) => void }) {
+  // 現在選択中のプリセット ID
   const [sel, setSel] = useState(ENEMY_PRESETS[0].id)
   const preset = ENEMY_PRESETS.find(p => p.id === sel) ?? ENEMY_PRESETS[0]
   return (
@@ -381,6 +417,9 @@ function EnemyPresetSelector({ onApply }: { onApply: (p: typeof ENEMY_PRESETS[0]
 }
 
 // ── FormulaBuilder ─────────────────────────────────────────────────────────────
+// 攻撃スキル計算式を対話的に組み立てるコンポーネント。
+// 演算子・変数・数値のトークンを追加/削除/挿入して計算式を構成し、
+// テンプレートの選択・適用・保存・削除機能も提供する。
 
 interface FormulaBuilderProps {
   tokens: FormulaToken[]
@@ -402,14 +441,24 @@ function FormulaBuilder({
   onTokensChange, onDamageTypeChange, onAttackElementChange, onFormulaNameChange,
   onSaveFormula, onDeleteCustomFormula,
 }: FormulaBuilderProps) {
+  // 変数パレットの現在のグループタブ
   const [activeGroup, setActiveGroup] = useState<FormulaVarGroup>('敵ステータス')
+  // 数値入力欄の現在の入力値
   const [numInput, setNumInput] = useState('')
+  // テンプレートドロップダウンの現在の選択 ID
   const [selTemplate, setSelTemplate] = useState(FORMULA_TEMPLATES[0].id)
+  // 保存完了などの一時メッセージ（3秒後に自動消去）
   const [saveMsg, setSaveMsg] = useState('')
+  // 操作ガイドパネルの表示フラグ
   const [showGuide, setShowGuide] = useState(false)
+  // 保存・設定ヘルプパネルの表示フラグ
   const [showSaveHelp, setShowSaveHelp] = useState(false)
+  // クリックで選んだ挿入位置（null = 末尾追加モード、数値 = そのインデックスの直後に挿入）
   const [insertAfterIdx, setInsertAfterIdx] = useState<number | null>(null)
 
+  // ── トークン追加 ──
+  // insertAfterIdx が null なら末尾に追加し、
+  // 数値なら指定インデックスの直後に挿入してカーソルを1つ右に移動する
   const addToken = (t: Omit<FormulaToken, 'id'>) => {
     const newTok = { ...t, id: newId() }
     if (insertAfterIdx === null) {
@@ -421,13 +470,19 @@ function FormulaBuilder({
       setInsertAfterIdx(insertAfterIdx + 1)
     }
   }
+  // ── トークン削除 ──
+  // 指定した id のトークンを計算式から取り除き、挿入カーソルをリセットする
   const removeToken = (id: string) => {
     onTokensChange(tokens.filter(t => t.id !== id))
     setInsertAfterIdx(null)
   }
 
+  // 組み込みテンプレートとユーザー保存済み計算式を結合した全テンプレート一覧
   const allTemplates = [...FORMULA_TEMPLATES, ...customFormulas]
 
+  // ── テンプレート適用 ──
+  // 選択中のテンプレートのトークン・式の種類・名前を現在の計算式フィールドに展開する。
+  // トークンは複製して使うことで元テンプレートが汚染されないようにする。
   const applyTemplate = () => {
     const tmpl = allTemplates.find(t => t.id === selTemplate)
     if (!tmpl) return
@@ -437,6 +492,9 @@ function FormulaBuilder({
     setInsertAfterIdx(null)
   }
 
+  // ── 計算式保存 ──
+  // 計算式名の空チェックをしてから親の onSaveFormula を呼び出す。
+  // 保存完了メッセージを3秒間表示する。
   const handleSave = () => {
     if (!formulaName.trim()) { setSaveMsg('計算式名を入力してください'); return }
     onSaveFormula(formulaName)
@@ -444,28 +502,34 @@ function FormulaBuilder({
     setTimeout(() => setSaveMsg(''), 3000)
   }
 
+  // 現在アクティブなグループタブの変数一覧（変数パレットのボタン群に使用）
   const groupVars = FORMULA_VARS.filter(v => v.group === activeGroup)
 
+  // 変数パレットのチップ内に表示する数値の短縮フォーマット
+  // 1000以上はカンマ区切り整数、小数は3桁まで表示する
   const numFmtSmall = (v: number) => {
     if (Math.abs(v) >= 1000) return v.toLocaleString()
     if (Number.isInteger(v)) return String(v)
     return v.toFixed(3)
   }
 
+  // トークンの種類・グループに応じた表示色を返す。
+  // 演算子はグレー、数値はブルー、変数はグループに対応したカラーパレットの色を使う。
   const tokenColor = (t: FormulaToken): string => {
-    if (t.type === 'op') return '#6b7280'
+    if (t.type === 'op')  return '#6b7280'
     if (t.type === 'num') return C.blue
     const varDef = FORMULA_VARS.find(v => v.key === t.varKey)
     const groupColors: Record<FormulaVarGroup, string> = {
-      '敵ステータス': C.orange,
+      '敵ステータス':       C.orange,
       'プレイヤーステータス': C.blue,
-      '耐性%': C.green,
-      '属性耐性%': C.teal,
-      '鎧相性': C.purple,
+      '耐性%':             C.green,
+      '属性耐性%':          C.teal,
+      '鎧相性':             C.purple,
     }
     return groupColors[varDef?.group as FormulaVarGroup] ?? C.gold
   }
 
+  // 内部演算子記号 → 計算式フィールド表示用記号のマップ
   const OP_DISPLAY: Record<string, string> = { '*':'×', '/':'÷', '+':'+', '-':'−', '(':'(', ')':')' }
 
   return (
@@ -876,6 +940,9 @@ function FormulaBuilder({
 }
 
 // ── FormulaResultDisplay ───────────────────────────────────────────────────────
+// パネル4に表示する計算結果コンポーネント。
+// evaluateFormulaFull の戻り値を受け取り、計算式・使用変数・途中結果・
+// 特殊状態適用・最終ダメージ/hitを段階的に表示する。
 
 function FormulaResultDisplay({ result, formulaName, damageType, stats }: {
   result: NonNullable<ReturnType<typeof evaluateFormulaFull>>
@@ -883,7 +950,9 @@ function FormulaResultDisplay({ result, formulaName, damageType, stats }: {
   damageType: 'physical' | 'magic'
   stats: PlayerStats
 }) {
+  // 物理は orange、魔法は purple でカラーリングを統一する
   const typeColor = damageType === 'physical' ? C.orange : C.purple
+  // 結果パネル内の数値フォーマット（整数はカンマ区切り、小数は4桁）
   const numFmt = (v: number) => {
     if (Number.isInteger(v)) return v.toLocaleString()
     return v.toFixed(4)
@@ -992,6 +1061,7 @@ function FormulaResultDisplay({ result, formulaName, damageType, stats }: {
   )
 }
 
+// 結果パネル内のセクションブロック。ラベル付きの色付きボーダーで各項目を区切る。
 function ResultBlock({ label, color, children }: { label:string; color:string; children: React.ReactNode }) {
   return (
     <div>
@@ -1008,6 +1078,7 @@ function ResultBlock({ label, color, children }: { label:string; color:string; c
 
 // ── 共通サブコンポーネント ─────────────────────────────────────────────────────
 
+// パネルのヘッダー行。アイコン・タイトル・任意の右端コンテンツ（ボタンなど）を表示する。
 function PanelHeader({ icon, title, color, children }: { icon:string; title:string; color:string; children?: React.ReactNode }) {
   return (
     <div style={{ ...S.panelHeader, borderBottomColor:`${color}40` }}>
@@ -1018,10 +1089,12 @@ function PanelHeader({ icon, title, color, children }: { icon:string; title:stri
   )
 }
 
+// パネル内の小見出し。左ボーダーカラーでセクションを色分けする。
 function SectionLabel({ children, color }: { children: React.ReactNode; color: string }) {
   return <div style={{ ...S.sectionLabel, color, borderLeftColor: color }}>{children}</div>
 }
 
+// 数値入力フィールド。フォーカス時にボーダーとシャドウで入力中を視覚的に示す。
 function NumField({ label, value, min, max, onChange, color }: {
   label:string; value:number; min:number; max:number; onChange:(v:string)=>void; color:string
 }) {
@@ -1038,6 +1111,7 @@ function NumField({ label, value, min, max, onChange, color }: {
   )
 }
 
+// セレクトボックスフィールド。ラベルとカスタムスタイルのドロップダウンをセットで表示する。
 function SelectField({ label, value, options, onChange, color }: {
   label:string; value:string; options:string[]; onChange:(v:string)=>void; color:string
 }) {
@@ -1055,6 +1129,7 @@ function SelectField({ label, value, options, onChange, color }: {
   )
 }
 
+// 計算結果の派生表示欄（除算軽減率など）。入力に対して計算した読み取り専用の値を表示する。
 function DerivedStat({ label, value, color }: { label:string; value:number|string; color:string }) {
   return (
     <div style={S.derivedStat}>
@@ -1064,6 +1139,7 @@ function DerivedStat({ label, value, color }: { label:string; value:number|strin
   )
 }
 
+// ON/OFF を切り替えられる特殊状態トグル行。アクティブ時にボーダーと背景色でハイライトする。
 function ToggleRow({ label, description, active, onToggle, activeColor }: {
   label:string; description:string; active:boolean; onToggle:()=>void; activeColor:string
 }) {
@@ -1079,6 +1155,8 @@ function ToggleRow({ label, description, active, onToggle, activeColor }: {
   )
 }
 
+// OFF + 複数段階のレベルを選択できる特殊状態トグル行（エナジーコート用）。
+// level=0 が OFF、1以上が各レベルに対応するボタンを持つ。
 function StepToggleRow({ label, description, level, steps, onStep, activeColor }: {
   label:string; description:string; level:number
   steps:{label:string;value:number}[]; onStep:(v:number)=>void; activeColor:string
@@ -1105,6 +1183,8 @@ function StepToggleRow({ label, description, level, steps, onStep, activeColor }
 }
 
 // ── カラーパレット ─────────────────────────────────────────────────────────────
+// アプリ全体で使用するカラー定数。インラインスタイルに直接参照するため
+// CSS 変数ではなく TypeScript 定数として管理する。
 
 const C = {
   bg: '#fef6e4',
@@ -1126,6 +1206,8 @@ const C = {
 }
 
 // ── スタイル ───────────────────────────────────────────────────────────────────
+// コンポーネントのインラインスタイルをまとめたオブジェクト。
+// CSS ファイルを使わずに型安全なスタイル管理を行うための設計。
 
 const S: Record<string, React.CSSProperties> = {
   root: {
