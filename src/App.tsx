@@ -522,6 +522,12 @@ function FormulaBuilder({
                     {numFmtSmall(val)}
                   </span>
                 )}
+                {v.desc?.includes('/') && (
+                  <span style={{ fontSize:'0.55rem', display:'block', color:`${col}88`, marginTop:'2px',
+                    maxWidth:'100px', whiteSpace:'normal', lineHeight:1.3, textAlign:'center' }}>
+                    {v.desc}
+                  </span>
+                )}
               </button>
             )
           })}
