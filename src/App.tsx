@@ -334,12 +334,22 @@ function FormulaBuilder({
   const [numInput, setNumInput] = useState('')
   const [selTemplate, setSelTemplate] = useState(FORMULA_TEMPLATES[0].id)
   const [saveMsg, setSaveMsg] = useState('')
+  const [insertAfterIdx, setInsertAfterIdx] = useState<number | null>(null)
 
   const addToken = (t: Omit<FormulaToken, 'id'>) => {
-    onTokensChange([...tokens, { ...t, id: newId() }])
+    const newTok = { ...t, id: newId() }
+    if (insertAfterIdx === null) {
+      onTokensChange([...tokens, newTok])
+    } else {
+      const next = [...tokens]
+      next.splice(insertAfterIdx + 1, 0, newTok)
+      onTokensChange(next)
+      setInsertAfterIdx(insertAfterIdx + 1)
+    }
   }
   const removeToken = (id: string) => {
     onTokensChange(tokens.filter(t => t.id !== id))
+    setInsertAfterIdx(null)
   }
 
   const allTemplates = [...FORMULA_TEMPLATES, ...customFormulas]
@@ -350,6 +360,7 @@ function FormulaBuilder({
     onTokensChange(cloneTokens(tmpl.tokens))
     onDamageTypeChange(tmpl.damageType)
     onFormulaNameChange(tmpl.name)
+    setInsertAfterIdx(null)
   }
 
   const handleSave = () => {
@@ -435,10 +446,10 @@ function FormulaBuilder({
           計算式フィールド
           {tokens.length === 0 && <span style={{ color:C.textMuted, fontStyle:'italic', marginLeft:'8px', textTransform:'none' }}>（空）</span>}
         </div>
-        <div style={S.formulaDisplay}>
+        <div style={S.formulaDisplay} onClick={() => setInsertAfterIdx(null)}>
           {tokens.length === 0
             ? <span style={{ color:C.textMuted, fontSize:'0.82rem', padding:'4px 8px' }}>ここに計算式のトークンが追加されます</span>
-            : tokens.map(t => {
+            : tokens.flatMap((t, idx) => {
                 const col = tokenColor(t)
                 const varDef = FORMULA_VARS.find(v => v.key === t.varKey)
                 const val = t.type === 'var' ? paletteValues[t.varKey!] : undefined
@@ -447,19 +458,38 @@ function FormulaBuilder({
                   : t.type === 'num'
                     ? String(t.numValue)
                     : (varDef?.label ?? t.varKey)
-                return (
-                  <div key={t.id} style={{ ...S.tokenPill, background:`${col}18`, border:`1.5px solid ${col}60`, color: col }}>
+                const isSelected = insertAfterIdx === idx
+                const elems: JSX.Element[] = [
+                  <div key={t.id}
+                    style={{ ...S.tokenPill, background:`${col}18`, border:`1.5px solid ${isSelected ? col : `${col}60`}`,
+                      color: col, cursor:'pointer',
+                      outline: isSelected ? `2px solid ${col}80` : 'none',
+                      boxShadow: isSelected ? `0 0 7px ${col}50` : 'none' }}
+                    onClick={(e) => { e.stopPropagation(); setInsertAfterIdx(prev => prev === idx ? null : idx) }}>
                     <span style={{ fontSize: t.type==='op' ? '1rem' : '0.75rem', fontWeight:700 }}>{label}</span>
                     {t.type === 'var' && val !== undefined && (
                       <span style={{ fontSize:'0.6rem', color:`${col}99`, display:'block', lineHeight:1, marginTop:'1px' }}>
                         {numFmtSmall(val)}
                       </span>
                     )}
-                    <button style={S.tokenRemove} onClick={() => removeToken(t.id)}>×</button>
+                    <button style={S.tokenRemove} onClick={(e) => { e.stopPropagation(); removeToken(t.id) }}>×</button>
                   </div>
-                )
+                ]
+                if (isSelected) {
+                  elems.push(
+                    <div key={`cur-${idx}`} style={{ width:'3px', background:C.gold, borderRadius:'2px',
+                      margin:'0 1px', minHeight:'28px', alignSelf:'stretch', flexShrink:0 }} />
+                  )
+                }
+                return elems
               })
           }
+        </div>
+        <div style={{ fontSize:'0.65rem', marginTop:'4px', minHeight:'14px',
+          color: insertAfterIdx !== null ? C.gold : C.textMuted }}>
+          {insertAfterIdx !== null
+            ? `▶ ${insertAfterIdx + 1}番目の後に挿入（背景クリックで末尾追加に戻す）`
+            : 'トークンをクリックして挿入位置を選択（未選択時は末尾に追加）'}
         </div>
       </div>
 
