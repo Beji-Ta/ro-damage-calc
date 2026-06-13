@@ -198,7 +198,6 @@ export const FORMULA_TEMPLATES: FormulaConfig[] = [
     tokens: mkTokens([
       ['var','MATK'], ['op','*'], ['num',25],
       ['op','*'], ['var','ARMOR_MOD_EARTH'], ['op','/'], ['num',100],
-      ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','EARTH_RES'], ['op',')'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','RACE_RES'], ['op',')'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','BOSS_RES'], ['op',')'], ['op','/'], ['num',100],
       ['op','*'], ['var','MRES_FACTOR'],
