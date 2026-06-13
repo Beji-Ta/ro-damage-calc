@@ -18,16 +18,18 @@ export default function App() {
   const [enemyInput, setEnemyInput]   = useState<EnemyInput>(() => loadData().enemyInput)
   const [customFormulas, setCustomFormulas] = useState<FormulaConfig[]>(() => loadData().customFormulas)
   const [activeTokens, setActiveTokens]     = useState<FormulaToken[]>(() => loadData().activeFormulaTokens)
-  const [activeDmgType, setActiveDmgType]   = useState<'physical'|'magic'>(() => loadData().activeFormulaDamageType)
-  const [activeFormName, setActiveFormName] = useState<string>(() => loadData().activeFormulaName)
+  const [activeDmgType, setActiveDmgType]         = useState<'physical'|'magic'>(() => loadData().activeFormulaDamageType)
+  const [activeAttackElem, setActiveAttackElem]   = useState<string>(() => loadData().activeFormulaAttackElement ?? '無属性')
+  const [activeFormName, setActiveFormName]       = useState<string>(() => loadData().activeFormulaName)
   const [importErr, setImportErr] = useState<string>('')
   const importRef = useRef<HTMLInputElement>(null)
 
   // auto-save
   useEffect(() => {
     saveData({ version:11, playerStats, enemyInput, customFormulas,
-      activeFormulaTokens: activeTokens, activeFormulaDamageType: activeDmgType, activeFormulaName: activeFormName })
-  }, [playerStats, enemyInput, customFormulas, activeTokens, activeDmgType, activeFormName])
+      activeFormulaTokens: activeTokens, activeFormulaDamageType: activeDmgType,
+      activeFormulaAttackElement: activeAttackElem, activeFormulaName: activeFormName })
+  }, [playerStats, enemyInput, customFormulas, activeTokens, activeDmgType, activeAttackElem, activeFormName])
 
   const setNum = useCallback((key: keyof PlayerStats, raw: string) => {
     const n = raw === '' ? 0 : parseInt(raw, 10)
@@ -54,6 +56,7 @@ export default function App() {
       setCustomFormulas(d.customFormulas)
       setActiveTokens(d.activeFormulaTokens)
       setActiveDmgType(d.activeFormulaDamageType)
+      setActiveAttackElem(d.activeFormulaAttackElement ?? '無属性')
       setActiveFormName(d.activeFormulaName)
       setImportErr('')
     } catch (err) {
@@ -79,7 +82,7 @@ export default function App() {
     id: 'active', name: activeFormName, tokens: activeTokens, damageType: activeDmgType
   }
   const evalResult = activeTokens.length > 0
-    ? evaluateFormulaFull(activeFormula, playerStats, enemyInput)
+    ? evaluateFormulaFull(activeFormula, playerStats, enemyInput, activeAttackElem)
     : null
 
   const defPct  = (1 - Math.max(0.10, (4000 + playerStats.equipDef)  / (4000 + playerStats.equipDef  * 10))) * 100
@@ -88,7 +91,7 @@ export default function App() {
   const mresPct = (1 - (2000 + playerStats.mres) / (2000 + playerStats.mres * 5)) * 100
 
   // pre-compute all variable values (for palette display + formula evaluation)
-  const paletteValues = resolveFormulaValues(playerStats, enemyInput)
+  const paletteValues = resolveFormulaValues(playerStats, enemyInput, activeAttackElem)
 
   return (
     <div style={S.root}>
@@ -115,7 +118,8 @@ export default function App() {
         <span style={S.saveBarTitle}>💾 データ管理</span>
         <button style={{...S.saveBtn, background: C.blue}}
           onClick={() => exportData({ version:11, playerStats, enemyInput, customFormulas,
-            activeFormulaTokens: activeTokens, activeFormulaDamageType: activeDmgType, activeFormulaName: activeFormName })}>
+            activeFormulaTokens: activeTokens, activeFormulaDamageType: activeDmgType,
+            activeFormulaAttackElement: activeAttackElem, activeFormulaName: activeFormName })}>
           エクスポート (JSON)
         </button>
         <button style={{...S.saveBtn, background: C.green}} onClick={() => importRef.current?.click()}>
@@ -249,11 +253,13 @@ export default function App() {
             <FormulaBuilder
               tokens={activeTokens}
               damageType={activeDmgType}
+              attackElement={activeAttackElem}
               formulaName={activeFormName}
               customFormulas={customFormulas}
               paletteValues={paletteValues}
               onTokensChange={setActiveTokens}
               onDamageTypeChange={setActiveDmgType}
+              onAttackElementChange={setActiveAttackElem}
               onFormulaNameChange={setActiveFormName}
               onSaveFormula={handleSaveFormula}
               onDeleteCustomFormula={handleDeleteCustomFormula}
@@ -315,19 +321,21 @@ function EnemyPresetSelector({ onApply }: { onApply: (p: typeof ENEMY_PRESETS[0]
 interface FormulaBuilderProps {
   tokens: FormulaToken[]
   damageType: 'physical' | 'magic'
+  attackElement: string
   formulaName: string
   customFormulas: FormulaConfig[]
   paletteValues: Record<string, number>
   onTokensChange: (t: FormulaToken[]) => void
   onDamageTypeChange: (t: 'physical' | 'magic') => void
+  onAttackElementChange: (v: string) => void
   onFormulaNameChange: (n: string) => void
   onSaveFormula: (name: string) => void
   onDeleteCustomFormula: (id: string) => void
 }
 
 function FormulaBuilder({
-  tokens, damageType, formulaName, customFormulas, paletteValues,
-  onTokensChange, onDamageTypeChange, onFormulaNameChange,
+  tokens, damageType, attackElement, formulaName, customFormulas, paletteValues,
+  onTokensChange, onDamageTypeChange, onAttackElementChange, onFormulaNameChange,
   onSaveFormula, onDeleteCustomFormula,
 }: FormulaBuilderProps) {
   const [activeGroup, setActiveGroup] = useState<FormulaVarGroup>('敵ステータス')
@@ -409,6 +417,14 @@ function FormulaBuilder({
             {t==='physical' ? '⚔️ 物理' : '✨ 魔法'}
           </button>
         ))}
+        <span style={{ fontSize:'0.72rem', color:C.textMuted, fontWeight:700, marginLeft:'6px' }}>攻撃属性:</span>
+        <div style={{ position:'relative' }}>
+          <select style={{ ...S.select, padding:'5px 28px 5px 8px', fontSize:'0.82rem' }}
+            value={attackElement} onChange={e => onAttackElementChange(e.target.value)}>
+            {ELEMENT_OPTIONS.map(el => <option key={el} value={el}>{el}</option>)}
+          </select>
+          <span style={S.selectArrow}>▾</span>
+        </div>
         <input
           style={{ ...S.statInput, flex:1, minWidth:'120px', fontSize:'0.88rem', padding:'6px 10px' }}
           placeholder="計算式名（任意）"

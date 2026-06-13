@@ -47,6 +47,7 @@ export const DEFAULT_SAVE_DATA: AppSaveData = {
   customFormulas: [],
   activeFormulaTokens: [],
   activeFormulaDamageType: 'magic',
+  activeFormulaAttackElement: '無属性',
   activeFormulaName: '',
 }
 

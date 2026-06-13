@@ -59,6 +59,7 @@ export interface AppSaveData {
   customFormulas: FormulaConfig[]
   activeFormulaTokens: FormulaToken[]
   activeFormulaDamageType: 'physical' | 'magic'
+  activeFormulaAttackElement: string
   activeFormulaName: string
 }
 

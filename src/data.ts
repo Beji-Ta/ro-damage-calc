@@ -135,7 +135,9 @@ export const FORMULA_VARS: FormulaVarDef[] = [
   { key: 'SHADOW_RES',  label: '闇属性耐性%',   group: '属性耐性%' },
   { key: 'GHOST_RES',   label: '念属性耐性%',   group: '属性耐性%' },
   { key: 'UNDEAD_RES',  label: '不死属性耐性%', group: '属性耐性%' },
-  // 鎧相性 (Lv1固定)
+  // 鎧相性
+  { key: 'ARMOR_MOD',         label: '鎧相性',      group: '鎧相性', desc: '攻撃属性セレクタに連動 vs 鎧属性' },
+  // 鎧相性 (属性固定 / Lv1)
   { key: 'ARMOR_MOD_NEUTRAL', label: '鎧相性[無]',   group: '鎧相性', desc: '無属性攻撃Lv1 vs 鎧属性' },
   { key: 'ARMOR_MOD_FIRE',    label: '鎧相性[火]',   group: '鎧相性', desc: '火属性攻撃Lv1 vs 鎧属性' },
   { key: 'ARMOR_MOD_WATER',   label: '鎧相性[水]',   group: '鎧相性', desc: '水属性攻撃Lv1 vs 鎧属性' },

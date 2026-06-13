@@ -1,7 +1,7 @@
 import type { PlayerStats, EnemyInput, FormulaToken, FormulaConfig, FormulaEvalResult } from './types'
 import { FORMULA_VARS, getElemMod } from './data'
 
-export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput): Record<string, number> {
+export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput, attackElement = '無属性'): Record<string, number> {
   const eDef  = stats.assumptioActive ? stats.equipDef  * 2 : stats.equipDef
   const eMdef = stats.assumptioActive ? stats.equipMdef * 2 : stats.equipMdef
   return {
@@ -33,6 +33,7 @@ export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput): Rec
     SHADOW_RES:  stats.shadowRes,
     GHOST_RES:   stats.ghostRes,
     UNDEAD_RES:  stats.undeadRes,
+    ARMOR_MOD:         getElemMod(attackElement, 1, stats.armorElement),
     ARMOR_MOD_NEUTRAL: getElemMod('無属性', 1, stats.armorElement),
     ARMOR_MOD_FIRE:    getElemMod('火',     1, stats.armorElement),
     ARMOR_MOD_WATER:   getElemMod('水',     1, stats.armorElement),
@@ -91,9 +92,10 @@ function safeEval(tokens: FormulaToken[], values: Record<string, number>): { res
 export function evaluateFormulaFull(
   formula: FormulaConfig,
   stats: PlayerStats,
-  enemy: EnemyInput
+  enemy: EnemyInput,
+  attackElement = '無属性'
 ): FormulaEvalResult {
-  const values = resolveFormulaValues(stats, enemy)
+  const values = resolveFormulaValues(stats, enemy, attackElement)
   const formulaStr = formulaToStr(formula.tokens)
   const substitutedStr = formulaToStr(formula.tokens, values)
 
