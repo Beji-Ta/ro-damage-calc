@@ -192,12 +192,12 @@ export const FORMULA_TEMPLATES: FormulaConfig[] = [
   },
   {
     id: 'tmpl_tetra2',
-    name: 'テトラボルテックス②（地属性/鎧:無）',
+    name: 'テトラボルテックス②（地属性魔法）',
     damageType: 'magic',
     isBuiltin: true,
     tokens: mkTokens([
       ['var','MATK'], ['op','*'], ['num',25],
-      ['op','*'], ['var','ARMOR_MOD_NEUTRAL'], ['op','/'], ['num',100],
+      ['op','*'], ['var','ARMOR_MOD_EARTH'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','EARTH_RES'], ['op',')'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','RACE_RES'], ['op',')'], ['op','/'], ['num',100],
       ['op','*'], ['op','('], ['num',100], ['op','-'], ['var','BOSS_RES'], ['op',')'], ['op','/'], ['num',100],
