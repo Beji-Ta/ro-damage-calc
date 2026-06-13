@@ -28,3 +28,6 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# game assets (large binary files, not part of the web app)
+data/
