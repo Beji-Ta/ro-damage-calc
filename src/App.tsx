@@ -3,7 +3,7 @@ import type { PlayerStats, EnemyInput, FormulaToken, FormulaConfig } from './typ
 import {
   FORMULA_VARS, FORMULA_TEMPLATES, ENEMY_PRESETS,
   FORMULA_VAR_GROUPS, type FormulaVarGroup,
-  ELEMENT_LABELS, ELEMENT_OPTIONS,
+  ELEMENT_LABELS, ELEMENT_OPTIONS, ELEM_ARMOR_COLS, getElemMod,
 } from './data'
 import {
   DEFAULT_PLAYER_STATS, DEFAULT_ENEMY_INPUT,
@@ -22,6 +22,7 @@ export default function App() {
   const [activeAttackElem, setActiveAttackElem]   = useState<string>(() => loadData().activeFormulaAttackElement ?? '無属性')
   const [activeFormName, setActiveFormName]       = useState<string>(() => loadData().activeFormulaName)
   const [importErr, setImportErr] = useState<string>('')
+  const [showArmorHelp, setShowArmorHelp] = useState(false)
   const importRef = useRef<HTMLInputElement>(null)
 
   // auto-save
@@ -188,9 +189,72 @@ export default function App() {
             <NumField label="遠距離耐性 %" value={playerStats.rangedRes} min={-100} max={100} onChange={v=>setNum('rangedRes',v)} color={C.green} />
           </div>
 
-          <SectionLabel color={C.green}>鎧属性</SectionLabel>
+          <div style={{ ...S.sectionLabel, color: C.green, borderLeftColor: C.green,
+            display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <span>鎧属性</span>
+            <button onClick={() => setShowArmorHelp(p => !p)}
+              style={{ fontSize:'0.65rem', padding:'2px 9px', borderRadius:'4px', cursor:'pointer',
+                background: showArmorHelp ? `${C.green}30` : '#f3f4f6',
+                border:`1px solid ${showArmorHelp ? C.green : '#e5e7eb'}`,
+                color: showArmorHelp ? '#166534' : C.textMuted, fontWeight:700, letterSpacing:0 }}>
+              {showArmorHelp ? '▲ 閉じる' : '❓ 属性相性表'}
+            </button>
+          </div>
           <SelectField label="鎧属性" value={playerStats.armorElement}
             options={ELEMENT_OPTIONS} onChange={v=>setStr('armorElement',v)} color={C.green} />
+
+          {showArmorHelp && (
+            <div style={{ background:'#f0fdf4', border:'1.5px solid #22c55e', borderRadius:'8px',
+              padding:'10px 12px', fontSize:'0.68rem', lineHeight:1.65, marginTop:'4px', overflowX:'auto' }}>
+              <p style={{ fontWeight:700, color:'#166534', margin:'0 0 4px 0', fontSize:'0.72rem' }}>
+                属性相性表
+              </p>
+              <p style={{ color:'#15803d', margin:'0 0 8px 0', fontSize:'0.64rem' }}>
+                行：攻撃属性 ／ 列：防御（鎧）属性 ／ 値：被ダメ倍率(%)
+                　100=等倍、<span style={{ color:'#dc2626', fontWeight:700 }}>150=弱点(1.5倍)</span>、
+                <span style={{ color:'#2563eb', fontWeight:700 }}>75=耐性(0.75倍)</span>、
+                <span style={{ color:'#6b7280' }}>0=無効</span>
+              </p>
+              <table style={{ borderCollapse:'collapse', fontSize:'0.63rem', whiteSpace:'nowrap' }}>
+                <thead>
+                  <tr>
+                    <th style={{ padding:'2px 6px', background:'#166534', color:'#fff', textAlign:'center',
+                      fontWeight:700, border:'1px solid #15803d', minWidth:'28px' }}>攻↓防→</th>
+                    {ELEM_ARMOR_COLS.map(col => (
+                      <th key={col} style={{ padding:'2px 6px', background:'#166534', color:'#fff',
+                        textAlign:'center', fontWeight:700, border:'1px solid #15803d', minWidth:'28px' }}>
+                        {col === '無属性' ? '無' : col === '不死' ? '不死' : col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {ELEMENT_OPTIONS.map((atk, ri) => (
+                    <tr key={atk} style={{ background: ri % 2 === 0 ? '#fff' : '#f0fdf4' }}>
+                      <td style={{ padding:'2px 6px', background:'#15803d', color:'#fff',
+                        fontWeight:700, textAlign:'center', border:'1px solid #16a34a' }}>
+                        {atk === '無属性' ? '無' : atk === '不死' ? '不死' : atk}
+                      </td>
+                      {ELEM_ARMOR_COLS.map(def => {
+                        const val = getElemMod(atk, 1, def)
+                        const isWeak   = val > 100
+                        const isResist = val < 100
+                        return (
+                          <td key={def} style={{ padding:'2px 6px', textAlign:'center',
+                            background: isWeak ? '#fef2f2' : isResist ? '#eff6ff' : undefined,
+                            color: isWeak ? '#dc2626' : isResist ? '#2563eb' : '#374151',
+                            fontWeight: val !== 100 ? 700 : 400,
+                            border:'1px solid #d1fae5' }}>
+                            {val}
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <SectionLabel color={C.green}>属性耐性 (%) — 属性別</SectionLabel>
           <div style={S.elementGrid}>
