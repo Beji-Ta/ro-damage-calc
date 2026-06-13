@@ -373,7 +373,7 @@ function FormulaBuilder({
     const varDef = FORMULA_VARS.find(v => v.key === t.varKey)
     const groupColors: Record<FormulaVarGroup, string> = {
       '敵ステータス': C.orange,
-      'DEF値': C.blue,
+      'プレイヤーステータス': C.blue,
       '耐性%': C.green,
       '属性耐性%': C.teal,
       '鎧相性': C.purple,
@@ -506,7 +506,7 @@ function FormulaBuilder({
             const val = paletteValues[v.key]
             const col = (() => {
               const gmap: Record<FormulaVarGroup, string> = {
-                '敵ステータス': C.orange, 'DEF値': C.blue,
+                '敵ステータス': C.orange, 'プレイヤーステータス': C.blue,
                 '耐性%': C.green, '属性耐性%': C.teal, '鎧相性': C.purple
               }
               return gmap[v.group as FormulaVarGroup] ?? C.gold

@@ -99,7 +99,7 @@ export interface FormulaVarDef {
   desc?: string
 }
 
-export const FORMULA_VAR_GROUPS = ['敵ステータス', 'DEF値', '耐性%', '属性耐性%', '鎧相性'] as const
+export const FORMULA_VAR_GROUPS = ['敵ステータス', 'プレイヤーステータス', '耐性%', '属性耐性%', '鎧相性'] as const
 export type FormulaVarGroup = typeof FORMULA_VAR_GROUPS[number]
 
 export const FORMULA_VARS: FormulaVarDef[] = [
@@ -110,16 +110,16 @@ export const FORMULA_VARS: FormulaVarDef[] = [
   { key: 'INT',  label: '敵INT',  group: '敵ステータス', desc: '敵のINT' },
   { key: 'LUK',  label: '敵LUK',  group: '敵ステータス', desc: '敵のLUK' },
   // DEF値
-  { key: 'STATUS_DEF',       label: '減算DEF',          group: 'DEF値', desc: 'プレイヤーの減算DEF' },
-  { key: 'STATUS_MDEF',      label: '減算MDEF',         group: 'DEF値', desc: 'プレイヤーの減算MDEF' },
-  { key: 'EQUIP_DEF',        label: '装備除算DEF(※)',   group: 'DEF値', desc: '装備除算DEF（アスムプティオ時×2）' },
-  { key: 'EQUIP_MDEF',       label: '装備除算MDEF(※)',  group: 'DEF値', desc: '装備除算MDEF（アスムプティオ時×2）' },
-  { key: 'HARD_DEF_FACTOR',  label: '除算DEF係数',   group: 'DEF値', desc: '(4000+DEF)/(4000+DEF×10),min0.10' },
-  { key: 'HARD_MDEF_FACTOR', label: '除算MDEF係数',  group: 'DEF値', desc: '(1000+MDEF)/(1000+MDEF×10),min0.10' },
-  { key: 'RES',              label: 'Res',            group: 'DEF値', desc: 'Resステータス生値' },
-  { key: 'MRES',             label: 'Mres',           group: 'DEF値', desc: 'Mresステータス生値' },
-  { key: 'RES_FACTOR',       label: 'Res係数',        group: 'DEF値', desc: '(2000+Res)/(2000+Res×5)' },
-  { key: 'MRES_FACTOR',      label: 'Mres係数',       group: 'DEF値', desc: '(2000+Mres)/(2000+Mres×5)' },
+  { key: 'STATUS_DEF',       label: '減算DEF',          group: 'プレイヤーステータス', desc: 'プレイヤーの減算DEF' },
+  { key: 'STATUS_MDEF',      label: '減算MDEF',         group: 'プレイヤーステータス', desc: 'プレイヤーの減算MDEF' },
+  { key: 'EQUIP_DEF',        label: '装備除算DEF(※)',   group: 'プレイヤーステータス', desc: '装備除算DEF（アスムプティオ時×2）' },
+  { key: 'EQUIP_MDEF',       label: '装備除算MDEF(※)',  group: 'プレイヤーステータス', desc: '装備除算MDEF（アスムプティオ時×2）' },
+  { key: 'HARD_DEF_FACTOR',  label: '除算DEF係数',   group: 'プレイヤーステータス', desc: '(4000+DEF)/(4000+DEF×10),min0.10' },
+  { key: 'HARD_MDEF_FACTOR', label: '除算MDEF係数',  group: 'プレイヤーステータス', desc: '(1000+MDEF)/(1000+MDEF×10),min0.10' },
+  { key: 'RES',              label: 'Res',            group: 'プレイヤーステータス', desc: 'Resステータス生値' },
+  { key: 'MRES',             label: 'Mres',           group: 'プレイヤーステータス', desc: 'Mresステータス生値' },
+  { key: 'RES_FACTOR',       label: 'Res係数',        group: 'プレイヤーステータス', desc: '(2000+Res)/(2000+Res×5)' },
+  { key: 'MRES_FACTOR',      label: 'Mres係数',       group: 'プレイヤーステータス', desc: '(2000+Mres)/(2000+Mres×5)' },
   // 耐性%
   { key: 'RACE_RES',   label: '種族耐性%',   group: '耐性%' },
   { key: 'BOSS_RES',   label: 'ボス耐性%',   group: '耐性%' },
