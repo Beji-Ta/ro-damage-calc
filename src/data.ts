@@ -116,6 +116,8 @@ export const FORMULA_VARS: FormulaVarDef[] = [
   { key: 'EQUIP_MDEF',       label: '装備MDEF(※)',   group: 'DEF値', desc: '装備除算MDEF（アスムプティオ時×2）' },
   { key: 'HARD_DEF_FACTOR',  label: '除算DEF係数',   group: 'DEF値', desc: '135/(装備DEF+135)' },
   { key: 'HARD_MDEF_FACTOR', label: '除算MDEF係数',  group: 'DEF値', desc: '135/(装備MDEF+135)' },
+  { key: 'RES',              label: 'Res',            group: 'DEF値', desc: 'Resステータス生値' },
+  { key: 'MRES',             label: 'Mres',           group: 'DEF値', desc: 'Mresステータス生値' },
   { key: 'RES_FACTOR',       label: 'Res係数',        group: 'DEF値', desc: '(2000+Res)/(2000+Res×5)' },
   { key: 'MRES_FACTOR',      label: 'Mres係数',       group: 'DEF値', desc: '(2000+Mres)/(2000+Mres×5)' },
   // 耐性%

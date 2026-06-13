@@ -16,6 +16,8 @@ export function resolveFormulaValues(stats: PlayerStats, enemy: EnemyInput): Rec
     EQUIP_MDEF:       eMdef,
     HARD_DEF_FACTOR:  135 / (eDef  + 135),
     HARD_MDEF_FACTOR: 135 / (eMdef + 135),
+    RES:              stats.res,
+    MRES:             stats.mres,
     RES_FACTOR:       (2000 + stats.res)  / (2000 + stats.res  * 5),
     MRES_FACTOR:      stats.mresIgnored ? 1 : (2000 + stats.mres) / (2000 + stats.mres * 5),
     RACE_RES:    stats.raceRes,
